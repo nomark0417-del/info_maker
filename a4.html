@@ -725,10 +725,10 @@
             <!-- Decorative Frame Overlay -->
             <div id="frame-overlay" class="absolute inset-4 pointer-events-none transition-all"></div>
 
-            <!-- Top Section: Slogan (Top-Right), Badge & Icon -->
+            <!-- Top Section: Slogan (Top-Left), Badge & Icon -->
             <div id="sign-header" class="relative z-10 flex flex-col items-center text-center">
-              <!-- Top Slogan Image (상단 우측 배치) -->
-              <div id="sign-slogan-container" class="w-full flex justify-end mb-2 transition-all">
+              <!-- Top Slogan Image (상단 좌측 배치) -->
+              <div id="sign-slogan-container" class="w-full flex justify-start mb-2 transition-all">
                 <img id="sign-slogan-img" src="" alt="오늘이 행복한 울산교육" class="max-w-full object-contain">
               </div>
 
@@ -1769,10 +1769,10 @@
       w.style.backgroundColor = palette.bg;
       w.style.color = palette.text;
 
-      // 0) Top Slogan Image (오늘이 행복한 울산교육 - 상단 우측 배치)
+      // 0) Top Slogan Image (오늘이 행복한 울산교육 - 상단 좌측 배치)
       if (state.showSlogan !== false && typeof ASSET_SLOGAN !== 'undefined') {
         dom.sloganContainer.style.display = 'flex';
-        dom.sloganContainer.style.justifyContent = 'flex-end';
+        dom.sloganContainer.style.justifyContent = 'flex-start';
         dom.sloganImg.src = ASSET_SLOGAN;
         dom.sloganImg.style.width = `${state.sloganWidth || 220}px`;
       } else {

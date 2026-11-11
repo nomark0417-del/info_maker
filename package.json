@@ -5,6 +5,7 @@
   "type": "module",
   "description": "A4 스마트 맞춤형 안내판 스튜디오 (행사·연수·협의회 안내판 제작 및 Cloudflare D1 보관함)",
   "scripts": {
+    "build": "npm run sync",
     "test": "node tests/api.test.mjs",
     "sync": "node -e \"const fs=require('fs'); fs.mkdirSync('public',{recursive:true}); fs.copyFileSync('a4.html','public/index.html'); fs.copyFileSync('a4.html','public/a4.html'); console.log('Synced a4.html -> public/index.html');\"",
     "db:init:local": "npx wrangler d1 execute a4-signboard-db --local --file=./schema.sql",
