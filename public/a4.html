@@ -725,10 +725,10 @@
             <!-- Decorative Frame Overlay -->
             <div id="frame-overlay" class="absolute inset-4 pointer-events-none transition-all"></div>
 
-            <!-- Top Section: Slogan, Badge & Icon -->
+            <!-- Top Section: Slogan (Top-Right), Badge & Icon -->
             <div id="sign-header" class="relative z-10 flex flex-col items-center text-center">
-              <!-- Top Slogan Image (오늘이 행복한 울산교육) -->
-              <div id="sign-slogan-container" class="mb-3 transition-all flex justify-center">
+              <!-- Top Slogan Image (상단 우측 배치) -->
+              <div id="sign-slogan-container" class="w-full flex justify-end mb-2 transition-all">
                 <img id="sign-slogan-img" src="" alt="오늘이 행복한 울산교육" class="max-w-full object-contain">
               </div>
 
@@ -768,24 +768,33 @@
               </div>
             </div>
 
-            <!-- Bottom Section: Footer Info, Stamp, Date & Optional QR -->
-            <div id="sign-footer" class="relative z-10 pt-4 mt-3 border-t border-slate-300/80 flex items-end justify-between gap-4">
-              <div class="space-y-1.5 text-left">
-                <!-- Bottom Logo Image (울산광역시교육청) -->
-                <div id="sign-logo-container" class="mb-1 transition-all">
+            <!-- Bottom Section: Centered Logo & Sub-info, Stamp, QR -->
+            <div id="sign-footer" class="relative z-10 pt-4 mt-3 border-t border-slate-300/80 flex items-center justify-between gap-4">
+              <!-- Left spacer to balance Right Stamp/QR or hold extra item -->
+              <div id="sign-footer-spacer" class="w-20 shrink-0 hidden sm:block"></div>
+
+              <!-- Center: CI Logo + Org/Dept/Contact + Date in smaller text -->
+              <div id="sign-footer-center" class="flex-1 flex flex-col items-center justify-center text-center space-y-1">
+                <!-- Bottom Logo Image (하단 중앙 배치) -->
+                <div id="sign-logo-container" class="mb-1 flex justify-center transition-all">
                   <img id="sign-logo-img" src="" alt="울산광역시교육청" class="object-contain">
                 </div>
-                <div id="sign-footer-left" class="flex flex-wrap items-center gap-2">
+                
+                <!-- Org / Dept / Contact under the logo -->
+                <div id="sign-footer-left" class="flex flex-wrap items-center justify-center gap-2 opacity-90">
                   <span id="sign-footer-org" class="font-bold">교육연수운영부</span>
                   <span id="sign-footer-divider" class="opacity-40">|</span>
                   <span id="sign-footer-contact" class="opacity-80">연수지원팀 (내선 302번)</span>
                 </div>
-                <div id="sign-footer-right" class="font-mono opacity-60">
+
+                <!-- Date under org -->
+                <div id="sign-footer-right" class="font-mono opacity-60 text-center">
                   <span id="sign-date-display">2026. 11. 11.</span>
                 </div>
               </div>
 
-              <div class="flex items-center gap-3">
+              <!-- Right: Official Stamp Badge & Optional QR -->
+              <div class="flex items-center justify-end gap-3 shrink-0 min-w-20">
                 <!-- Official Stamp Badge -->
                 <div id="sign-stamp-box" class="hidden px-3 py-1.5 rounded border-2 font-black tracking-widest text-xs uppercase">
                   안내필
@@ -1760,11 +1769,12 @@
       w.style.backgroundColor = palette.bg;
       w.style.color = palette.text;
 
-      // 0) Top Slogan Image (오늘이 행복한 울산교육)
+      // 0) Top Slogan Image (오늘이 행복한 울산교육 - 상단 우측 배치)
       if (state.showSlogan !== false && typeof ASSET_SLOGAN !== 'undefined') {
         dom.sloganContainer.style.display = 'flex';
+        dom.sloganContainer.style.justifyContent = 'flex-end';
         dom.sloganImg.src = ASSET_SLOGAN;
-        dom.sloganImg.style.width = `${state.sloganWidth || 240}px`;
+        dom.sloganImg.style.width = `${state.sloganWidth || 220}px`;
       } else {
         dom.sloganContainer.style.display = 'none';
       }
@@ -1871,11 +1881,12 @@
         dom.bulletsBox.style.display = 'none';
       }
 
-      // 7) Footer & Date & Stamp & QR
+      // 7) Footer: Centered Logo + Sub-info, Stamp, QR
       if (state.showLogo !== false && typeof ASSET_LOGO !== 'undefined') {
-        dom.logoContainer.style.display = 'block';
+        dom.logoContainer.style.display = 'flex';
+        dom.logoContainer.style.justifyContent = 'center';
         dom.logoImg.src = ASSET_LOGO;
-        dom.logoImg.style.height = `${state.logoHeight || 28}px`;
+        dom.logoImg.style.height = `${state.logoHeight || 30}px`;
       } else {
         dom.logoContainer.style.display = 'none';
       }
@@ -1884,12 +1895,14 @@
       dom.footerContact.textContent = state.footerContact || '';
       dom.footerDivider.style.display = (state.footerOrg && state.footerContact) ? 'inline' : 'none';
       dom.footerLeft.style.display = (state.footerOrg || state.footerContact) ? 'flex' : 'none';
-      dom.footerLeft.style.fontSize = `${state.footerSize}px`;
+      // Logo sub-info small text font size (scaled slightly smaller than normal footer)
+      const subInfoSize = Math.max(11, Math.round(state.footerSize * 0.9));
+      dom.footerLeft.style.fontSize = `${subInfoSize}px`;
 
       if (state.showDate) {
         dom.footerRight.style.display = 'block';
         dom.dateDisplay.textContent = state.customDate || nowDateStr;
-        dom.footerRight.style.fontSize = `${Math.max(10, state.footerSize - 1)}px`;
+        dom.footerRight.style.fontSize = `${Math.max(10, subInfoSize - 1)}px`;
       } else {
         dom.footerRight.style.display = 'none';
       }
