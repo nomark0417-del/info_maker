@@ -253,7 +253,14 @@
         <!-- Text Input Fields -->
         <div class="space-y-3">
           <div>
-            <label for="input-badge" class="block text-xs font-semibold text-slate-700 mb-1">상단 뱃지 / 분류 문구 (비우면 숨김)</label>
+            <div class="flex items-center justify-between mb-1">
+              <label for="input-badge" class="text-xs font-semibold text-slate-700">상단 뱃지 / 분류 문구 (비우면 숨김)</label>
+              <div class="flex items-center gap-1.5 text-[11px] text-slate-500">
+                <span>크기:</span>
+                <input type="range" id="quick-range-badge-size" min="11" max="36" step="1" value="16" class="w-20 accent-amber-600">
+                <span id="quick-val-badge-size" class="font-mono font-bold text-amber-700 w-8 text-right">16px</span>
+              </div>
+            </div>
             <input type="text" id="input-badge" class="w-full text-xs px-3 py-2 rounded-lg border border-slate-300 focus:border-amber-500 focus:ring-1 focus:ring-amber-500 outline-none transition" placeholder="예: 2026 직무연수, 협의회 안내, NOTICE">
           </div>
 
@@ -432,10 +439,10 @@
           <!-- Badge Size -->
           <div>
             <div class="flex justify-between text-xs mb-1">
-              <label for="range-badge-size" class="font-semibold text-slate-700">5. 상단 뱃지 글자 크기</label>
-              <span id="val-badge-size" class="font-mono font-semibold text-slate-600">13px</span>
+              <label for="range-badge-size" class="font-bold text-slate-800">5. 상단 뱃지 글자 크기</label>
+              <span id="val-badge-size" class="font-mono font-bold text-amber-700">16px</span>
             </div>
-            <input type="range" id="range-badge-size" min="10" max="24" step="1" value="13" class="w-full accent-amber-600 cursor-pointer">
+            <input type="range" id="range-badge-size" min="11" max="36" step="1" value="16" class="w-full accent-amber-600 cursor-pointer">
           </div>
 
           <!-- Footer Size -->
@@ -829,7 +836,7 @@
   <script>
     // --- Default Typography & Layout Constants ---
     const DEFAULT_TYPO = {
-      badgeSize: 13,
+      badgeSize: 16,
       titleSize: 40,
       subtitleSize: 16,
       infoSize: 15,
@@ -1331,6 +1338,8 @@
 
       // Content Inputs
       inputBadge: document.getElementById('input-badge'),
+      quickRangeBadgeSize: document.getElementById('quick-range-badge-size'),
+      quickValBadgeSize: document.getElementById('quick-val-badge-size'),
       inputTitle: document.getElementById('input-title'),
       inputSubtitle: document.getElementById('input-subtitle'),
       toggleInfoCard: document.getElementById('toggle-info-card'),
@@ -1467,6 +1476,10 @@
       dom.valBulletSize.textContent = `${state.bulletSize}px`;
       dom.rangeBadgeSize.value = state.badgeSize;
       dom.valBadgeSize.textContent = `${state.badgeSize}px`;
+      if (dom.quickRangeBadgeSize) {
+        dom.quickRangeBadgeSize.value = state.badgeSize;
+        dom.quickValBadgeSize.textContent = `${state.badgeSize}px`;
+      }
       dom.rangeFooterSize.value = state.footerSize;
       dom.valFooterSize.textContent = `${state.footerSize}px`;
 
@@ -1784,6 +1797,9 @@
         dom.badgeContainer.style.display = 'block';
         dom.badge.textContent = state.badge;
         dom.badge.style.fontSize = `${state.badgeSize}px`;
+        const py = Math.max(4, Math.round(state.badgeSize * 0.35));
+        const px = Math.max(12, Math.round(state.badgeSize * 1.1));
+        dom.badge.style.padding = `${py}px ${px}px`;
         dom.badge.style.backgroundColor = palette.badgeBg;
         dom.badge.style.color = palette.badgeText;
         dom.badge.style.borderColor = palette.badgeBorder;
@@ -2442,6 +2458,16 @@
       dom.rangeIconSize.addEventListener('change', () => pushHistory());
 
       // Slogan & Logo Slider Listeners
+      if (dom.quickRangeBadgeSize) {
+        dom.quickRangeBadgeSize.addEventListener('input', (e) => {
+          state.badgeSize = parseInt(e.target.value, 10);
+          dom.quickValBadgeSize.textContent = `${state.badgeSize}px`;
+          dom.rangeBadgeSize.value = state.badgeSize;
+          dom.valBadgeSize.textContent = `${state.badgeSize}px`;
+          renderSignboard();
+        });
+        dom.quickRangeBadgeSize.addEventListener('change', () => pushHistory());
+      }
       dom.rangeSloganWidth.addEventListener('input', (e) => {
         state.sloganWidth = parseInt(e.target.value, 10);
         dom.valSloganWidth.textContent = `${state.sloganWidth}px`;
