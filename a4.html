@@ -1827,13 +1827,14 @@
       const hasIcon = state.showIcon !== false && state.iconSize > 0 && !!ICONS[state.icon];
       if (!hasIcon) {
         dom.iconContainer.style.display = 'none';
-        dom.badgeContainer.classList.remove('mb-4');
-        dom.badgeContainer.classList.add('mb-6');
+        // 아이콘이 없을 때는 뱃지가 위쪽에 너무 붙지 않도록 상단 여백을 주고 본문과의 여백도 균형감 있게 배치
+        dom.badgeContainer.style.marginTop = '28px';
+        dom.badgeContainer.style.marginBottom = '28px';
       } else {
         dom.iconContainer.style.display = 'flex';
         dom.iconContainer.innerHTML = `<div style="width:${state.iconSize}px;height:${state.iconSize}px;color:${palette.accent}" class="transition-all">${ICONS[state.icon]}</div>`;
-        dom.badgeContainer.classList.remove('mb-6');
-        dom.badgeContainer.classList.add('mb-4');
+        dom.badgeContainer.style.marginTop = '0px';
+        dom.badgeContainer.style.marginBottom = '16px';
       }
 
       // 3) Main Title
