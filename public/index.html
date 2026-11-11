@@ -1,0 +1,2433 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>A4 스마트 맞춤형 안내판 스튜디오 Pro</title>
+  <!-- Pretendard & Google Fonts -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/static/pretendard.min.css">
+  <link href="https://fonts.googleapis.com/css2?family=Black+Han+Sans&family=Gowun+Batang:wght@400;700&family=Montserrat:wght@500;700;800;900&family=Nanum+Myeongjo:wght@400;700;800&family=Noto+Sans+KR:wght@300;400;500;700;900&family=Noto+Serif+KR:wght@400;600;700;900&display=swap" rel="stylesheet">
+  <!-- Tailwind CSS -->
+  <script src="https://cdn.tailwindcss.com/3.4.17"></script>
+  <!-- html2canvas for High-Res PNG Export -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+  <!-- QRious for lightweight Canvas QR Code generation -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/qrious/4.0.2/qrious.min.js"></script>
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          fontFamily: {
+            pretendard: ['"Pretendard Variable"', 'Pretendard', '"Noto Sans KR"', 'sans-serif'],
+            sans: ['"Noto Sans KR"', 'sans-serif'],
+            serif: ['"Noto Serif KR"', 'serif'],
+            myeongjo: ['"Nanum Myeongjo"', 'serif'],
+            batang: ['"Gowun Batang"', 'serif'],
+            display: ['"Montserrat"', '"Noto Sans KR"', 'sans-serif'],
+            impact: ['"Black Han Sans"', '"Noto Sans KR"', 'sans-serif'],
+          }
+        }
+      }
+    };
+  </script>
+  <style>
+    :root {
+      --a4-portrait-w: 210mm;
+      --a4-portrait-h: 297mm;
+      --a4-landscape-w: 297mm;
+      --a4-landscape-h: 210mm;
+    }
+
+    @media print {
+      html, body {
+        margin: 0 !important;
+        padding: 0 !important;
+        background: #fff !important;
+        -webkit-print-color-adjust: exact !important;
+        print-color-adjust: exact !important;
+      }
+      .no-print {
+        display: none !important;
+      }
+      .print-container {
+        padding: 0 !important;
+        margin: 0 !important;
+        background: none !important;
+        display: block !important;
+        width: 100% !important;
+        height: 100% !important;
+        overflow: visible !important;
+      }
+      #canvas-zoom-stage {
+        transform: none !important;
+        width: 100% !important;
+        height: auto !important;
+      }
+      #signboard-wrapper {
+        box-shadow: none !important;
+        border-radius: 0 !important;
+        border: none !important;
+        margin: 0 !important;
+        page-break-after: avoid !important;
+        page-break-inside: avoid !important;
+      }
+      body.orientation-portrait #signboard-wrapper {
+        width: 210mm !important;
+        height: 296.5mm !important;
+      }
+      body.orientation-landscape #signboard-wrapper {
+        width: 297mm !important;
+        height: 209.5mm !important;
+      }
+    }
+
+    .signboard-portrait {
+      width: 595px;
+      min-height: 842px;
+      aspect-ratio: 210 / 297;
+    }
+    .signboard-landscape {
+      width: 842px;
+      min-height: 595px;
+      aspect-ratio: 297 / 210;
+    }
+
+    ::-webkit-scrollbar {
+      width: 6px;
+      height: 6px;
+    }
+    ::-webkit-scrollbar-track {
+      background: #f1f5f9;
+    }
+    ::-webkit-scrollbar-thumb {
+      background: #cbd5e1;
+      border-radius: 3px;
+    }
+    ::-webkit-scrollbar-thumb:hover {
+      background: #94a3b8;
+    }
+
+    input[type="range"] {
+      height: 6px;
+      border-radius: 999px;
+    }
+  </style>
+  <style id="dynamic-print-style">
+    @page { size: A4 portrait; margin: 0; }
+  </style>
+</head>
+<body class="bg-slate-100 text-slate-800 font-pretendard antialiased min-h-screen flex flex-col orientation-portrait">
+
+  <!-- Top Navigation Bar -->
+  <header class="no-print bg-slate-900 text-white border-b border-slate-800 sticky top-0 z-30 shadow-md">
+    <div class="max-w-[1440px] mx-auto px-4 sm:px-6 py-2.5 flex flex-wrap items-center justify-between gap-3">
+      <div class="flex items-center space-x-3">
+        <div class="w-9 h-9 rounded-xl bg-gradient-to-br from-amber-400 to-amber-600 flex items-center justify-center font-black text-slate-950 text-lg tracking-tighter shadow-inner">
+          A4
+        </div>
+        <div>
+          <div class="flex items-center gap-2">
+            <h1 class="text-sm sm:text-base font-bold tracking-tight">A4 스마트 맞춤형 안내판 스튜디오</h1>
+            <span id="current-loaded-badge" class="hidden text-[11px] font-semibold px-2 py-0.5 bg-sky-500/20 text-sky-300 rounded-full border border-sky-400/30">
+              편집 중: <span id="current-loaded-title">새 안내판</span>
+            </span>
+          </div>
+          <p class="text-[11px] text-slate-400">행사 · 연수 · 협의회 · 기관 맞춤형 안내판 디자인 및 보관함</p>
+        </div>
+      </div>
+
+      <!-- Quick Action Buttons -->
+      <div class="flex flex-wrap items-center gap-2">
+        <!-- Undo / Redo -->
+        <div class="inline-flex rounded-lg bg-slate-800 p-0.5 border border-slate-700">
+          <button type="button" id="btn-undo" title="실행 취소 (Ctrl+Z)" class="px-2 py-1 text-xs text-slate-300 hover:text-white disabled:opacity-35 transition">↩ 취소</button>
+          <button type="button" id="btn-redo" title="다시 실행 (Ctrl+Y)" class="px-2 py-1 text-xs text-slate-300 hover:text-white disabled:opacity-35 transition">↪ 다시</button>
+        </div>
+
+        <!-- Orientation Toggle -->
+        <div class="inline-flex rounded-lg bg-slate-800 p-0.5 border border-slate-700" role="group">
+          <button type="button" id="btn-portrait" class="px-2.5 py-1 text-xs font-bold rounded-md transition-all flex items-center gap-1 bg-amber-500 text-slate-950 shadow-sm">
+            <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 3h10a2 2 0 012 2v14a2 2 0 01-2 2H7a2 2 0 01-2-2V5a2 2 0 012-2z"></path></svg>
+            세로형
+          </button>
+          <button type="button" id="btn-landscape" class="px-2.5 py-1 text-xs font-medium rounded-md transition-all flex items-center gap-1 text-slate-300 hover:text-white">
+            <svg class="w-3.5 h-3.5 rotate-90" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 3h10a2 2 0 012 2v14a2 2 0 01-2 2H7a2 2 0 01-2-2V5a2 2 0 012-2z"></path></svg>
+            가로형
+          </button>
+        </div>
+
+        <!-- Quick Save to Vault Button -->
+        <button type="button" id="btn-header-save" class="px-3 py-1.5 text-xs font-bold rounded-lg bg-indigo-600 hover:bg-indigo-500 text-white shadow flex items-center gap-1.5 transition-colors">
+          <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7H5a2 2 0 00-2 2v9a2 2 0 002 2h14a2 2 0 002-2V9a2 2 0 00-2-2h-3m-1 4l-3 3m0 0l-3-3m3 3V4"></path></svg>
+          <span id="btn-header-save-label">보관함 저장</span>
+        </button>
+
+        <!-- Export / Print -->
+        <button type="button" id="btn-export-png" class="px-3 py-1.5 text-xs font-semibold rounded-lg bg-slate-800 hover:bg-slate-700 text-slate-200 border border-slate-700 flex items-center gap-1.5 transition-colors">
+          <svg class="w-3.5 h-3.5 text-sky-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"></path></svg>
+          PNG 이미지
+        </button>
+        <button type="button" id="btn-print" class="px-3.5 py-1.5 text-xs font-bold rounded-lg bg-emerald-600 hover:bg-emerald-500 text-white shadow flex items-center gap-1.5 transition-colors">
+          <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 17h2a2 2 0 002-2v-4a2 2 0 00-2-2H5a2 2 0 00-2 2v4a2 2 0 002 2h2m2 4h6a2 2 0 002-2v-4a2 2 0 00-2-2H9a2 2 0 00-2 2v4a2 2 0 002 2zm8-12V5a2 2 0 00-2-2H9a2 2 0 00-2 2v4h10z"></path></svg>
+          A4 인쇄 / PDF
+        </button>
+      </div>
+    </div>
+  </header>
+
+  <!-- Main Body Layout -->
+  <main class="flex-1 max-w-[1440px] w-full mx-auto p-3 sm:p-5 grid grid-cols-1 lg:grid-cols-12 gap-5 items-start">
+
+    <!-- Left Column: Tabbed Controls & Input Form -->
+    <aside class="no-print lg:col-span-5 bg-white rounded-2xl border border-slate-200 shadow-sm overflow-hidden flex flex-col">
+
+      <!-- Tab Navigation -->
+      <div class="grid grid-cols-4 bg-slate-100 p-1 border-b border-slate-200 text-xs font-bold">
+        <button type="button" data-tab="content" class="tab-btn py-2 px-1 rounded-xl bg-white text-slate-900 shadow-xs transition flex items-center justify-center gap-1">
+          <span>📝</span><span>내용 편집</span>
+        </button>
+        <button type="button" data-tab="typography" class="tab-btn py-2 px-1 rounded-xl text-slate-600 hover:text-slate-900 transition flex items-center justify-center gap-1">
+          <span>🔤</span><span>글자·크기</span>
+        </button>
+        <button type="button" data-tab="design" class="tab-btn py-2 px-1 rounded-xl text-slate-600 hover:text-slate-900 transition flex items-center justify-center gap-1">
+          <span>🎨</span><span>테마·장식</span>
+        </button>
+        <button type="button" data-tab="vault" class="tab-btn py-2 px-1 rounded-xl text-slate-600 hover:text-slate-900 transition flex items-center justify-center gap-1 relative">
+          <span>🗂️</span><span>보관함</span>
+          <span id="vault-count-badge" class="ml-0.5 px-1.5 py-0.2 bg-indigo-100 text-indigo-700 rounded-full text-[10px]">0</span>
+        </button>
+      </div>
+
+      <!-- TAB 1: CONTENT EDITING -->
+      <div id="tab-panel-content" class="tab-panel p-4 sm:p-5 space-y-4">
+
+        <!-- AI Mood Suggestion Card -->
+        <div id="ai-suggestion-box" class="p-3 rounded-xl bg-amber-50/90 border border-amber-200 transition-all">
+          <div class="flex items-center justify-between gap-2">
+            <div class="flex items-center gap-1.5">
+              <span class="w-5 h-5 rounded-full bg-amber-500 text-white flex items-center justify-center text-[11px] font-bold">✨</span>
+              <span class="text-xs font-bold text-amber-950">문구 맞춤 테마 추천</span>
+            </div>
+            <span id="ai-detected-tag" class="text-[11px] font-bold px-2 py-0.5 bg-amber-200/80 text-amber-900 rounded-full">
+              연수 / 교육 안내 감지
+            </span>
+          </div>
+          <div class="mt-1.5 flex items-center justify-between gap-2">
+            <p id="ai-detected-desc" class="text-[11px] text-amber-800 leading-snug flex-1">
+              입력하신 제목에 어울리는 색상 테마와 아이콘을 자동으로 추천합니다.
+            </p>
+            <button type="button" id="btn-apply-recommended-mood" class="shrink-0 px-2.5 py-1 text-[11px] font-bold bg-amber-600 hover:bg-amber-700 text-white rounded-lg transition-colors shadow-xs">
+              스타일 적용
+            </button>
+          </div>
+        </div>
+
+        <!-- Quick Preset Buttons (Grouped: Work/Event first, then Facility) -->
+        <div class="space-y-2">
+          <div class="flex items-center justify-between">
+            <label class="text-xs font-bold text-slate-800">⚡ 업무 · 행사 빠른 템플릿</label>
+            <button type="button" id="btn-reset-blank" class="text-[11px] text-slate-500 hover:text-slate-800 underline">빈 양식 초기화</button>
+          </div>
+          <div class="flex flex-wrap gap-1.5">
+            <button type="button" class="preset-btn text-xs px-2.5 py-1.5 rounded-lg bg-indigo-50 hover:bg-indigo-100 text-indigo-800 border border-indigo-200 font-semibold transition" data-preset="training">🎓 직무연수 안내</button>
+            <button type="button" class="preset-btn text-xs px-2.5 py-1.5 rounded-lg bg-indigo-50 hover:bg-indigo-100 text-indigo-800 border border-indigo-200 font-semibold transition" data-preset="council">🤝 협의회 회의 안내</button>
+            <button type="button" class="preset-btn text-xs px-2.5 py-1.5 rounded-lg bg-indigo-50 hover:bg-indigo-100 text-indigo-800 border border-indigo-200 font-semibold transition" data-preset="seminar">🎉 행사·세미나 안내</button>
+            <button type="button" class="preset-btn text-xs px-2.5 py-1.5 rounded-lg bg-indigo-50 hover:bg-indigo-100 text-indigo-800 border border-indigo-200 font-semibold transition" data-preset="direction">➡️ 행사장 방향 안내</button>
+            <button type="button" class="preset-btn text-xs px-2.5 py-1.5 rounded-lg bg-indigo-50 hover:bg-indigo-100 text-indigo-800 border border-indigo-200 font-semibold transition" data-preset="registration">📋 등록·접수처 안내</button>
+          </div>
+          <div class="flex flex-wrap gap-1.5 pt-0.5">
+            <button type="button" class="preset-btn text-[11px] px-2 py-1 rounded-md bg-slate-100 hover:bg-slate-200 text-slate-700 transition" data-preset="danger">🚨 출입금지</button>
+            <button type="button" class="preset-btn text-[11px] px-2 py-1 rounded-md bg-slate-100 hover:bg-slate-200 text-slate-700 transition" data-preset="quiet">🤫 정숙 구역</button>
+            <button type="button" class="preset-btn text-[11px] px-2 py-1 rounded-md bg-slate-100 hover:bg-slate-200 text-slate-700 transition" data-preset="cafe">☕ 와이파이 안내</button>
+            <button type="button" class="preset-btn text-[11px] px-2 py-1 rounded-md bg-slate-100 hover:bg-slate-200 text-slate-700 transition" data-preset="check">🔧 시설 점검 중</button>
+            <button type="button" class="preset-btn text-[11px] px-2 py-1 rounded-md bg-slate-100 hover:bg-slate-200 text-slate-700 transition" data-preset="eco">🌱 분리배출 안내</button>
+          </div>
+        </div>
+
+        <hr class="border-slate-200">
+
+        <!-- Text Input Fields -->
+        <div class="space-y-3">
+          <div>
+            <label for="input-badge" class="block text-xs font-semibold text-slate-700 mb-1">상단 뱃지 / 분류 문구 (비우면 숨김)</label>
+            <input type="text" id="input-badge" class="w-full text-xs px-3 py-2 rounded-lg border border-slate-300 focus:border-amber-500 focus:ring-1 focus:ring-amber-500 outline-none transition" placeholder="예: 2026 직무연수, 협의회 안내, NOTICE">
+          </div>
+
+          <div>
+            <label for="input-title" class="block text-xs font-semibold text-slate-700 mb-1 flex items-center justify-between">
+              <span>메인 타이틀 (핵심 제목 · 줄바꿈 가능) *</span>
+              <span class="text-[11px] text-slate-400">Enter로 줄바꿈</span>
+            </label>
+            <textarea id="input-title" rows="2" class="w-full text-sm font-bold px-3 py-2 rounded-lg border border-slate-300 focus:border-amber-500 focus:ring-2 focus:ring-amber-500/20 outline-none transition resize-y" placeholder="가장 강조할 큰 제목을 입력하세요"></textarea>
+          </div>
+
+          <div>
+            <label for="input-subtitle" class="block text-xs font-semibold text-slate-700 mb-1">보조 설명 / 환영 문구 (선택)</label>
+            <textarea id="input-subtitle" rows="2" class="w-full text-xs px-3 py-2 rounded-lg border border-slate-300 focus:border-amber-500 focus:ring-1 focus:ring-amber-500 outline-none transition resize-y" placeholder="상세한 안내 또는 참석자 환영 인사말"></textarea>
+          </div>
+
+          <!-- Event / Meeting Key Info Table Toggle (일시 / 장소 / 대상) -->
+          <div class="p-3 rounded-xl bg-slate-50 border border-slate-200 space-y-2.5">
+            <div class="flex items-center justify-between">
+              <label for="toggle-info-card" class="text-xs font-bold text-slate-800 flex items-center gap-1.5 cursor-pointer">
+                <input type="checkbox" id="toggle-info-card" class="rounded text-indigo-600 focus:ring-indigo-500 w-3.5 h-3.5">
+                <span>📌 행사·연수·협의회 요약 표 (일시/장소/대상) 표시</span>
+              </label>
+            </div>
+            <div id="info-card-inputs" class="space-y-2 pt-1">
+              <div class="grid grid-cols-12 gap-1.5 items-center">
+                <input type="text" id="input-info-label-1" value="일 시" class="col-span-3 text-xs font-bold px-2 py-1.5 rounded border border-slate-300 bg-white text-center">
+                <input type="text" id="input-info-val-1" placeholder="예: 2026. 11. 11.(수) 14:00 ~ 17:00" class="col-span-9 text-xs px-2.5 py-1.5 rounded border border-slate-300 bg-white">
+              </div>
+              <div class="grid grid-cols-12 gap-1.5 items-center">
+                <input type="text" id="input-info-label-2" value="장 소" class="col-span-3 text-xs font-bold px-2 py-1.5 rounded border border-slate-300 bg-white text-center">
+                <input type="text" id="input-info-val-2" placeholder="예: 본관 3층 제1세미나실 (대회의실)" class="col-span-9 text-xs px-2.5 py-1.5 rounded border border-slate-300 bg-white">
+              </div>
+              <div class="grid grid-cols-12 gap-1.5 items-center">
+                <input type="text" id="input-info-label-3" value="대 상" class="col-span-3 text-xs font-bold px-2 py-1.5 rounded border border-slate-300 bg-white text-center">
+                <input type="text" id="input-info-val-3" placeholder="예: 관내 업무 담당자 및 협의회 위원 전원" class="col-span-9 text-xs px-2.5 py-1.5 rounded border border-slate-300 bg-white">
+              </div>
+            </div>
+          </div>
+
+          <!-- Detail Bullet Points -->
+          <div>
+            <div class="flex items-center justify-between mb-1.5">
+              <label class="text-xs font-semibold text-slate-700">세부 안내 사항 / 체크리스트 (선택)</label>
+              <div class="flex items-center gap-2">
+                <select id="select-bullet-style" class="text-[11px] px-2 py-0.5 rounded border border-slate-300 bg-white text-slate-700">
+                  <option value="dot">● 기본 점</option>
+                  <option value="number">1. 번호 매기기</option>
+                  <option value="check">✔ 체크 아이콘</option>
+                  <option value="arrow">▸ 화살표 기호</option>
+                </select>
+                <button type="button" id="btn-add-bullet" class="text-[11px] px-2 py-0.5 rounded bg-amber-500/15 text-amber-800 hover:bg-amber-500/25 font-bold transition">
+                  + 항목 추가
+                </button>
+              </div>
+            </div>
+            <div id="bullet-items-container" class="space-y-1.5">
+              <!-- Dynamic bullets with up/down/delete -->
+            </div>
+          </div>
+
+          <!-- Footer / Contact / Date Info -->
+          <div class="grid grid-cols-2 gap-2 pt-1">
+            <div>
+              <label for="input-footer-org" class="block text-[11px] font-semibold text-slate-700 mb-1">주관 / 발행처 / 기관명</label>
+              <input type="text" id="input-footer-org" class="w-full text-xs px-2.5 py-1.5 rounded-lg border border-slate-300 focus:border-amber-500 outline-none" placeholder="예: 교육연수원 / 기획운영부">
+            </div>
+            <div>
+              <label for="input-footer-contact" class="block text-[11px] font-semibold text-slate-700 mb-1">문의처 / 담당 부서 안내</label>
+              <input type="text" id="input-footer-contact" class="w-full text-xs px-2.5 py-1.5 rounded-lg border border-slate-300 focus:border-amber-500 outline-none" placeholder="예: 행정실 (내선 204)">
+            </div>
+          </div>
+
+          <div class="grid grid-cols-2 gap-2">
+            <div>
+              <label class="flex items-center justify-between text-[11px] font-semibold text-slate-700 mb-1">
+                <span>하단 날짜 표기</span>
+                <input type="checkbox" id="toggle-show-date" checked class="rounded text-amber-600 w-3.5 h-3.5">
+              </label>
+              <input type="text" id="input-custom-date" class="w-full text-xs px-2.5 py-1.5 rounded-lg border border-slate-300 focus:border-amber-500 outline-none" placeholder="예: 2026. 11. 11.">
+            </div>
+            <div>
+              <label for="input-stamp-text" class="block text-[11px] font-semibold text-slate-700 mb-1">하단 직인/배지 문구 (선택)</label>
+              <input type="text" id="input-stamp-text" class="w-full text-xs px-2.5 py-1.5 rounded-lg border border-slate-300 focus:border-amber-500 outline-none" placeholder="비우면 숨김 (예: 안내필)">
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- TAB 2: TYPOGRAPHY & FONT SIZE CONTROLS -->
+      <div id="tab-panel-typography" class="tab-panel hidden p-4 sm:p-5 space-y-4">
+        <div class="flex items-center justify-between">
+          <div>
+            <h3 class="text-xs font-bold text-slate-900">글자 크기 & 타이포그래피 정밀 조절</h3>
+            <p class="text-[11px] text-slate-500">테마를 바꿔도 설정한 글자 크기가 그대로 유지됩니다.</p>
+          </div>
+          <button type="button" id="btn-reset-typography" class="text-[11px] px-2.5 py-1 rounded-lg border border-slate-300 hover:bg-slate-100 text-slate-700 font-semibold transition">
+            기본 크기로 초기화
+          </button>
+        </div>
+
+        <!-- Global Font Scale Quick Buttons -->
+        <div class="p-3 rounded-xl bg-slate-50 border border-slate-200">
+          <label class="block text-[11px] font-bold text-slate-700 mb-2">⚡ 전체 글자 크기 일괄 배율 조절</label>
+          <div class="grid grid-cols-4 gap-1.5">
+            <button type="button" data-scale="0.85" class="scale-preset-btn py-1.5 text-xs font-semibold rounded-lg border border-slate-300 bg-white hover:bg-slate-100 transition">작게 (85%)</button>
+            <button type="button" data-scale="1" class="scale-preset-btn py-1.5 text-xs font-bold rounded-lg border border-amber-500 bg-amber-50 text-amber-900 transition">표준 (100%)</button>
+            <button type="button" data-scale="1.15" class="scale-preset-btn py-1.5 text-xs font-semibold rounded-lg border border-slate-300 bg-white hover:bg-slate-100 transition">크게 (115%)</button>
+            <button type="button" data-scale="1.3" class="scale-preset-btn py-1.5 text-xs font-semibold rounded-lg border border-slate-300 bg-white hover:bg-slate-100 transition">특대 (130%)</button>
+          </div>
+        </div>
+
+        <!-- Font Family & Weight & Alignment -->
+        <div class="grid grid-cols-2 gap-2.5">
+          <div>
+            <label for="select-font" class="block text-[11px] font-semibold text-slate-700 mb-1">기본 서체 (폰트)</label>
+            <select id="select-font" class="w-full text-xs px-2.5 py-2 rounded-lg border border-slate-300 bg-white font-medium">
+              <option value="font-pretendard">프리텐다드 (깔끔한 현대 고딕)</option>
+              <option value="font-sans">본고딕 Noto Sans (표준 문서형)</option>
+              <option value="font-serif">본명조 Noto Serif (격식/공식행사)</option>
+              <option value="font-myeongjo">나눔명조 (단정한 학술/연수)</option>
+              <option value="font-batang">고운바탕체 (부드러운 감성 안내)</option>
+              <option value="font-display">몬세라트 Display (모던/세미나)</option>
+              <option value="font-impact">블랙한산스 (초강력 임팩트 제목)</option>
+            </select>
+          </div>
+          <div>
+            <label for="select-align" class="block text-[11px] font-semibold text-slate-700 mb-1">전체 정렬 방식</label>
+            <select id="select-align" class="w-full text-xs px-2.5 py-2 rounded-lg border border-slate-300 bg-white font-medium">
+              <option value="text-center">가운데 정렬 (포스터/안내판 표준)</option>
+              <option value="text-left">좌측 정렬 (공문/회의 안내문형)</option>
+            </select>
+          </div>
+        </div>
+
+        <hr class="border-slate-200">
+
+        <!-- Individual Element Font Size Sliders -->
+        <div class="space-y-3.5">
+          <!-- Main Title Size -->
+          <div>
+            <div class="flex justify-between text-xs mb-1">
+              <label for="range-title-size" class="font-bold text-slate-800">1. 메인 타이틀 글자 크기</label>
+              <span id="val-title-size" class="font-mono font-bold text-amber-700">40px</span>
+            </div>
+            <input type="range" id="range-title-size" min="22" max="76" step="1" value="40" class="w-full accent-amber-600 cursor-pointer">
+          </div>
+
+          <!-- Subtitle Size -->
+          <div>
+            <div class="flex justify-between text-xs mb-1">
+              <label for="range-subtitle-size" class="font-semibold text-slate-700">2. 보조 설명 문구 크기</label>
+              <span id="val-subtitle-size" class="font-mono font-semibold text-slate-600">16px</span>
+            </div>
+            <input type="range" id="range-subtitle-size" min="12" max="32" step="1" value="16" class="w-full accent-amber-600 cursor-pointer">
+          </div>
+
+          <!-- Info Table Size -->
+          <div>
+            <div class="flex justify-between text-xs mb-1">
+              <label for="range-info-size" class="font-semibold text-slate-700">3. 요약 표 (일시/장소/대상) 글자 크기</label>
+              <span id="val-info-size" class="font-mono font-semibold text-slate-600">15px</span>
+            </div>
+            <input type="range" id="range-info-size" min="11" max="26" step="1" value="15" class="w-full accent-amber-600 cursor-pointer">
+          </div>
+
+          <!-- Bullet Items Size -->
+          <div>
+            <div class="flex justify-between text-xs mb-1">
+              <label for="range-bullet-size" class="font-semibold text-slate-700">4. 세부 안내(체크리스트) 글자 크기</label>
+              <span id="val-bullet-size" class="font-mono font-semibold text-slate-600">15px</span>
+            </div>
+            <input type="range" id="range-bullet-size" min="11" max="28" step="1" value="15" class="w-full accent-amber-600 cursor-pointer">
+          </div>
+
+          <!-- Badge Size -->
+          <div>
+            <div class="flex justify-between text-xs mb-1">
+              <label for="range-badge-size" class="font-semibold text-slate-700">5. 상단 뱃지 글자 크기</label>
+              <span id="val-badge-size" class="font-mono font-semibold text-slate-600">13px</span>
+            </div>
+            <input type="range" id="range-badge-size" min="10" max="24" step="1" value="13" class="w-full accent-amber-600 cursor-pointer">
+          </div>
+
+          <!-- Footer Size -->
+          <div>
+            <div class="flex justify-between text-xs mb-1">
+              <label for="range-footer-size" class="font-semibold text-slate-700">6. 하단 발행처 · 문의처 크기</label>
+              <span id="val-footer-size" class="font-mono font-semibold text-slate-600">13px</span>
+            </div>
+            <input type="range" id="range-footer-size" min="10" max="22" step="1" value="13" class="w-full accent-amber-600 cursor-pointer">
+          </div>
+        </div>
+
+        <hr class="border-slate-200">
+
+        <!-- Spacing & Line-Height Sliders -->
+        <div class="space-y-3">
+          <h4 class="text-xs font-bold text-slate-800">간격 및 여백 세부 조정</h4>
+
+          <div class="grid grid-cols-2 gap-3">
+            <div>
+              <div class="flex justify-between text-[11px] mb-1">
+                <label for="range-line-height" class="font-semibold text-slate-600">제목 줄간격(행간)</label>
+                <span id="val-line-height" class="font-mono text-slate-600">1.25</span>
+              </div>
+              <input type="range" id="range-line-height" min="1.05" max="1.65" step="0.05" value="1.25" class="w-full accent-slate-700 cursor-pointer">
+            </div>
+
+            <div>
+              <div class="flex justify-between text-[11px] mb-1">
+                <label for="range-letter-spacing" class="font-semibold text-slate-600">제목 자간</label>
+                <span id="val-letter-spacing" class="font-mono text-slate-600">-0.02em</span>
+              </div>
+              <input type="range" id="range-letter-spacing" min="-0.06" max="0.12" step="0.01" value="-0.02" class="w-full accent-slate-700 cursor-pointer">
+            </div>
+          </div>
+
+          <div class="grid grid-cols-2 gap-3">
+            <div>
+              <div class="flex justify-between text-[11px] mb-1">
+                <label for="range-bullet-gap" class="font-semibold text-slate-600">항목 사이 간격</label>
+                <span id="val-bullet-gap" class="font-mono text-slate-600">10px</span>
+              </div>
+              <input type="range" id="range-bullet-gap" min="4" max="24" step="2" value="10" class="w-full accent-slate-700 cursor-pointer">
+            </div>
+
+            <div>
+              <div class="flex justify-between text-[11px] mb-1">
+                <label for="range-canvas-padding" class="font-semibold text-slate-600">용지 안쪽 여백</label>
+                <span id="val-canvas-padding" class="font-mono text-slate-600">48px</span>
+              </div>
+              <input type="range" id="range-canvas-padding" min="24" max="76" step="4" value="48" class="w-full accent-slate-700 cursor-pointer">
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- TAB 3: DESIGN, THEME, ICON & QR -->
+      <div id="tab-panel-design" class="tab-panel hidden p-4 sm:p-5 space-y-4">
+        <!-- Theme Selector (8 Themes) -->
+        <div>
+          <label class="block text-xs font-bold text-slate-800 mb-2">감성 & 업무 테마 프리셋 (8종)</label>
+          <div class="grid grid-cols-4 gap-1.5" id="theme-selector-grid">
+            <button type="button" class="theme-choice-btn text-left p-2 rounded-lg border text-xs transition" data-theme="royal-blue">
+              <span class="block w-full h-2 rounded bg-blue-700 mb-1"></span>
+              <span class="font-bold block text-slate-800 text-[11px]">로얄 블루</span>
+              <span class="text-[10px] text-slate-500">연수/학술/기관</span>
+            </button>
+            <button type="button" class="theme-choice-btn text-left p-2 rounded-lg border text-xs transition" data-theme="formal">
+              <span class="block w-full h-2 rounded bg-slate-900 mb-1"></span>
+              <span class="font-bold block text-slate-800 text-[11px]">딥 네이비</span>
+              <span class="text-[10px] text-slate-500">협의회/공식회의</span>
+            </button>
+            <button type="button" class="theme-choice-btn text-left p-2 rounded-lg border text-xs transition" data-theme="purple-festa">
+              <span class="block w-full h-2 rounded bg-violet-700 mb-1"></span>
+              <span class="font-bold block text-slate-800 text-[11px]">로얄 퍼플</span>
+              <span class="text-[10px] text-slate-500">행사/세미나/특강</span>
+            </button>
+            <button type="button" class="theme-choice-btn text-left p-2 rounded-lg border text-xs transition" data-theme="eco">
+              <span class="block w-full h-2 rounded bg-emerald-700 mb-1"></span>
+              <span class="font-bold block text-slate-800 text-[11px]">포레스트 그린</span>
+              <span class="text-[10px] text-slate-500">생태/청렴/환경</span>
+            </button>
+            <button type="button" class="theme-choice-btn text-left p-2 rounded-lg border text-xs transition" data-theme="cafe">
+              <span class="block w-full h-2 rounded bg-amber-800 mb-1"></span>
+              <span class="font-bold block text-slate-800 text-[11px]">웜 클래식</span>
+              <span class="text-[10px] text-slate-500">다과/휴게/문화</span>
+            </button>
+            <button type="button" class="theme-choice-btn text-left p-2 rounded-lg border text-xs transition" data-theme="minimal">
+              <span class="block w-full h-2 rounded bg-neutral-900 mb-1"></span>
+              <span class="font-bold block text-slate-800 text-[11px]">모던 미니멀</span>
+              <span class="text-[10px] text-slate-500">전시/고급흑백</span>
+            </button>
+            <button type="button" class="theme-choice-btn text-left p-2 rounded-lg border text-xs transition" data-theme="danger">
+              <span class="block w-full h-2 rounded bg-amber-500 mb-1"></span>
+              <span class="font-bold block text-slate-800 text-[11px]">주의 / 경고</span>
+              <span class="text-[10px] text-slate-500">안전/시설점검</span>
+            </button>
+            <button type="button" class="theme-choice-btn text-left p-2 rounded-lg border text-xs transition" data-theme="red-alert">
+              <span class="block w-full h-2 rounded bg-rose-600 mb-1"></span>
+              <span class="font-bold block text-slate-800 text-[11px]">긴급 / 금지</span>
+              <span class="text-[10px] text-slate-500">통제/절대금지</span>
+            </button>
+          </div>
+        </div>
+
+        <!-- Icon Picker & Size -->
+        <div>
+          <div class="flex items-center justify-between mb-1.5">
+            <label class="text-xs font-bold text-slate-800">상징 아이콘 & 방향 화살표 선택 (24종)</label>
+            <span id="label-icon-size" class="text-[11px] font-semibold text-amber-700">크기: 보통 (64px)</span>
+          </div>
+          <input type="range" id="range-icon-size" min="0" max="120" step="8" value="64" class="w-full accent-amber-600 cursor-pointer mb-2.5">
+          <div class="grid grid-cols-8 gap-1.5" id="icon-selector-grid">
+            <!-- Populated via JS -->
+          </div>
+        </div>
+
+        <!-- Border Frame Style -->
+        <div>
+          <label for="select-frame" class="block text-xs font-bold text-slate-800 mb-1">외곽 테두리 프레임</label>
+          <select id="select-frame" class="w-full text-xs px-3 py-2 rounded-lg border border-slate-300 bg-white font-medium">
+            <option value="double-line">더블 라인 프레임 (공식 행사 · 연수 · 회의 표준)</option>
+            <option value="solid-bold">볼드 솔리드 프레임 (명확한 경계 강조)</option>
+            <option value="corner-accent">모서리 코너 브래킷 (모던 세미나 · 방향 안내)</option>
+            <option value="top-accent">상단 컬러 바 강조 (깔끔한 현대 공문형)</option>
+            <option value="hazard-stripe">안전 해저드 스트라이프 (산업 · 점검 · 출입통제)</option>
+            <option value="none">테두리 없음 (미니멀 플랫)</option>
+          </select>
+        </div>
+
+        <hr class="border-slate-200">
+
+        <!-- Optional QR Code Generator -->
+        <div class="p-3 rounded-xl bg-slate-50 border border-slate-200 space-y-2">
+          <label for="toggle-qr" class="text-xs font-bold text-slate-800 flex items-center gap-1.5 cursor-pointer">
+            <input type="checkbox" id="toggle-qr" class="rounded text-indigo-600 w-3.5 h-3.5">
+            <span>📱 안내판 우측 하단에 QR 코드 표시 (자료집/출석/설문/와이파이)</span>
+          </label>
+          <div id="qr-inputs-box" class="grid grid-cols-1 sm:grid-cols-2 gap-2 pt-1">
+            <input type="text" id="input-qr-text" placeholder="URL 또는 텍스트 (예: https://...)" class="text-xs px-2.5 py-1.5 rounded border border-slate-300 bg-white">
+            <input type="text" id="input-qr-label" placeholder="QR 안내 문구 (예: 연수교재 다운로드)" class="text-xs px-2.5 py-1.5 rounded border border-slate-300 bg-white">
+          </div>
+        </div>
+      </div>
+
+      <!-- TAB 4: VAULT (SAVE / UPDATE / DUPLICATE / CLOUD DB) -->
+      <div id="tab-panel-vault" class="tab-panel hidden p-4 sm:p-5 space-y-4">
+        <div class="p-3.5 rounded-xl bg-indigo-50/90 border border-indigo-200 space-y-2.5">
+          <div class="flex items-center justify-between">
+            <h3 class="text-xs font-bold text-indigo-950 flex items-center gap-1.5">
+              <span>💾 현재 작업 중인 안내판 저장</span>
+            </h3>
+            <span id="db-sync-status" class="text-[10px] font-semibold px-2 py-0.5 rounded-full bg-indigo-200/70 text-indigo-900">
+              로컬 + 클라우드 DB 준비됨
+            </span>
+          </div>
+
+          <div class="grid grid-cols-3 gap-1.5">
+            <select id="select-save-category" class="col-span-1 text-xs px-2 py-1.5 rounded-lg border border-indigo-300 bg-white font-semibold text-slate-700">
+              <option value="연수안내">🎓 연수안내</option>
+              <option value="협의회">🤝 협의회</option>
+              <option value="행사안내">🎉 행사안내</option>
+              <option value="방향안내">➡️ 방향안내</option>
+              <option value="일반안내">📋 일반안내</option>
+            </select>
+            <input type="text" id="input-save-memo" placeholder="관리용 메모 (예: 11월 1차 협의회)" class="col-span-2 text-xs px-2.5 py-1.5 rounded-lg border border-indigo-300 bg-white">
+          </div>
+
+          <div class="flex flex-wrap gap-2 pt-1">
+            <!-- Update Existing Button (Shown when editing an existing record) -->
+            <button type="button" id="btn-vault-update" class="hidden flex-1 py-2 px-3 rounded-lg bg-amber-600 hover:bg-amber-700 text-white text-xs font-bold shadow-xs transition">
+              ✏️ 현재 안내판 수정 저장 (덮어쓰기)
+            </button>
+            <!-- Save as New Button -->
+            <button type="button" id="btn-vault-save-new" class="flex-1 py-2 px-3 rounded-lg bg-indigo-600 hover:bg-indigo-700 text-white text-xs font-bold shadow-xs transition">
+              ➕ 새 안내판으로 저장
+            </button>
+          </div>
+          <p id="vault-editing-notice" class="hidden text-[11px] text-indigo-800">
+            💡 기존 안내판을 불러온 상태입니다. <strong>[수정 저장]</strong>을 누르면 원본이 업데이트되고, <strong>[새 안내판으로 저장]</strong>을 누르면 복제본이 새로 추가됩니다.
+          </p>
+        </div>
+
+        <!-- Search & Filter Saved Signs -->
+        <div class="flex items-center gap-2">
+          <input type="text" id="input-vault-search" placeholder="저장된 안내판 제목 · 분류 검색..." class="flex-1 text-xs px-3 py-1.5 rounded-lg border border-slate-300 outline-none focus:border-indigo-500">
+          <select id="select-vault-filter" class="text-xs px-2.5 py-1.5 rounded-lg border border-slate-300 bg-white">
+            <option value="ALL">전체 분류</option>
+            <option value="연수안내">🎓 연수안내</option>
+            <option value="협의회">🤝 협의회</option>
+            <option value="행사안내">🎉 행사안내</option>
+            <option value="방향안내">➡️ 방향안내</option>
+            <option value="일반안내">📋 일반안내</option>
+          </select>
+        </div>
+
+        <!-- Saved List Container -->
+        <div id="vault-list-container" class="space-y-2 max-h-[380px] overflow-y-auto pr-1">
+          <!-- Populated via JS -->
+        </div>
+
+        <!-- JSON Export / Import Backup -->
+        <div class="pt-2 border-t border-slate-200 flex items-center justify-between text-[11px] text-slate-500">
+          <span>데이터 파일 백업/복원</span>
+          <div class="flex items-center gap-2">
+            <button type="button" id="btn-export-json" class="px-2 py-1 rounded border border-slate-300 hover:bg-slate-100 text-slate-700 font-medium">JSON 내보내기</button>
+            <label class="px-2 py-1 rounded border border-slate-300 hover:bg-slate-100 text-slate-700 font-medium cursor-pointer">
+              JSON 불러오기
+              <input type="file" id="input-import-json" accept=".json" class="hidden">
+            </label>
+          </div>
+        </div>
+      </div>
+
+    </aside>
+
+    <!-- Right Column: Live A4 Signboard Canvas -->
+    <section class="lg:col-span-7 flex flex-col items-center">
+
+      <!-- Canvas Header Info & Zoom Bar -->
+      <div class="no-print w-full flex flex-wrap items-center justify-between gap-2 mb-3 px-2">
+        <div class="flex items-center gap-2">
+          <span class="inline-block w-2.5 h-2.5 rounded-full bg-emerald-500 animate-pulse"></span>
+          <span class="text-xs font-bold text-slate-700">실시간 A4 프리뷰</span>
+          <span id="canvas-spec-label" class="text-[11px] px-2 py-0.5 rounded bg-slate-200 text-slate-700 font-mono">
+            A4 세로 (210 × 297 mm)
+          </span>
+        </div>
+
+        <!-- Zoom Controls -->
+        <div class="flex items-center gap-1.5 bg-white px-2.5 py-1 rounded-lg border border-slate-200 shadow-2xs text-xs">
+          <span class="text-[11px] text-slate-500 mr-1">화면 배율:</span>
+          <button type="button" data-zoom="0.75" class="zoom-btn px-1.5 py-0.5 rounded hover:bg-slate-100 text-slate-600">75%</button>
+          <button type="button" data-zoom="0.9" class="zoom-btn px-1.5 py-0.5 rounded hover:bg-slate-100 text-slate-600">90%</button>
+          <button type="button" data-zoom="1" class="zoom-btn px-1.5 py-0.5 rounded bg-amber-500 text-slate-950 font-bold">100%</button>
+          <button type="button" data-zoom="1.15" class="zoom-btn px-1.5 py-0.5 rounded hover:bg-slate-100 text-slate-600">115%</button>
+        </div>
+      </div>
+
+      <!-- Signboard Sheet Container -->
+      <div class="print-container w-full flex justify-center items-start py-2 overflow-x-auto">
+        <div id="canvas-zoom-stage" class="origin-top transition-transform duration-200">
+          <div id="signboard-wrapper" class="signboard-portrait relative bg-white transition-colors duration-200 shadow-2xl rounded-sm overflow-hidden border border-slate-300 flex flex-col justify-between select-none" style="padding: 48px;">
+            
+            <!-- Decorative Frame Overlay -->
+            <div id="frame-overlay" class="absolute inset-4 pointer-events-none transition-all"></div>
+
+            <!-- Top Section: Badge & Icon -->
+            <div id="sign-header" class="relative z-10 flex flex-col items-center text-center">
+              <div id="sign-badge-container" class="mb-4">
+                <span id="sign-badge" class="inline-block uppercase tracking-widest font-black px-4 py-1.5 rounded-full border">
+                  2026 직무연수 안내
+                </span>
+              </div>
+
+              <div id="sign-icon-container" class="mb-4 flex justify-center items-center transition-all">
+                <!-- SVG icon rendered here -->
+              </div>
+            </div>
+
+            <!-- Middle Section: Main Title, Subtitle, Event Summary Table, Bullets -->
+            <div id="sign-body" class="relative z-10 flex-1 flex flex-col justify-center my-2 text-center">
+              <h2 id="sign-title" class="font-black tracking-tight mb-4 break-keep whitespace-pre-line">
+                2026학년도 역량 강화 직무연수 안내
+              </h2>
+
+              <p id="sign-subtitle" class="leading-relaxed max-w-2xl mx-auto break-keep whitespace-pre-line mb-5">
+                참석자 여러분을 진심으로 환영합니다. 원활한 연수 진행을 위해 아래 안내 사항을 확인해 주시기 바랍니다.
+              </p>
+
+              <!-- Event / Meeting Key Info Table (일시 / 장소 / 대상) -->
+              <div id="sign-info-card" class="max-w-xl w-full mx-auto my-2.5 rounded-xl overflow-hidden border text-left">
+                <div id="sign-info-rows" class="divide-y">
+                  <!-- Populated via JS -->
+                </div>
+              </div>
+
+              <!-- Bullets Box -->
+              <div id="sign-bullets-box" class="max-w-xl mx-auto w-full my-2.5 text-left">
+                <ul id="sign-bullets-list">
+                  <!-- Bullet list items -->
+                </ul>
+              </div>
+            </div>
+
+            <!-- Bottom Section: Footer Info, Stamp, Date & Optional QR -->
+            <div id="sign-footer" class="relative z-10 pt-4 mt-3 border-t border-slate-300/80 flex items-end justify-between gap-4">
+              <div class="space-y-1 text-left">
+                <div id="sign-footer-left" class="flex flex-wrap items-center gap-2">
+                  <span id="sign-footer-org" class="font-bold">교육연수운영부</span>
+                  <span id="sign-footer-divider" class="opacity-40">|</span>
+                  <span id="sign-footer-contact" class="opacity-80">연수지원팀 (내선 302번)</span>
+                </div>
+                <div id="sign-footer-right" class="font-mono opacity-60">
+                  <span id="sign-date-display">2026. 11. 11.</span>
+                </div>
+              </div>
+
+              <div class="flex items-center gap-3">
+                <!-- Official Stamp Badge -->
+                <div id="sign-stamp-box" class="hidden px-3 py-1.5 rounded border-2 font-black tracking-widest text-xs uppercase">
+                  안내필
+                </div>
+
+                <!-- QR Code Block -->
+                <div id="sign-qr-box" class="hidden flex flex-col items-center p-1.5 bg-white rounded-lg border border-slate-300 shadow-2xs">
+                  <canvas id="sign-qr-canvas" width="68" height="68"></canvas>
+                  <span id="sign-qr-label" class="text-[10px] font-bold text-slate-700 mt-1 max-w-[84px] text-center leading-tight break-keep">연수교재</span>
+                </div>
+              </div>
+            </div>
+
+          </div>
+        </div>
+      </div>
+
+      <!-- Printing Tip Note -->
+      <div class="no-print mt-3 max-w-xl text-center text-xs text-slate-500 leading-normal">
+        💡 <strong class="text-slate-700">출력 팁:</strong> 가로형/세로형 전환 시 인쇄 용지 방향이 자동 설정됩니다. 인쇄 창에서 <em>[배경 그래픽 표시]</em>를 체크해 주세요.
+      </div>
+
+    </section>
+
+  </main>
+
+  <!-- In-Page Toast Notification -->
+  <div id="toast-msg" class="no-print fixed bottom-6 right-6 z-50 bg-slate-900 text-white px-4 py-2.5 rounded-xl shadow-lg border border-slate-700 text-xs font-medium flex items-center gap-2 transform translate-y-20 opacity-0 transition-all duration-300 pointer-events-none">
+    <span id="toast-icon">✅</span>
+    <span id="toast-text">알림 내용</span>
+  </div>
+  <script>
+    // --- Default Typography & Layout Constants ---
+    const DEFAULT_TYPO = {
+      badgeSize: 13,
+      titleSize: 40,
+      subtitleSize: 16,
+      infoSize: 15,
+      bulletSize: 15,
+      footerSize: 13,
+      titleLineHeight: 1.25,
+      titleLetterSpacing: -0.02,
+      bulletGap: 10,
+      canvasPadding: 48
+    };
+
+    const nowDateStr = (() => {
+      const d = new Date();
+      return `${d.getFullYear()}. ${String(d.getMonth() + 1).padStart(2, '0')}. ${String(d.getDate()).padStart(2, '0')}.`;
+    })();
+
+    // --- Application State ---
+    const state = {
+      id: null, // Active saved record ID (for overwrite update)
+      category: '연수안내',
+      memo: '',
+      orientation: 'portrait', // 'portrait' | 'landscape'
+      badge: '2026 직무연수 안내',
+      title: '2026학년도 역량 강화 직무연수 안내',
+      subtitle: '참석자 여러분을 진심으로 환영합니다. 원활한 연수 진행을 위해 아래 안내 사항을 확인해 주시기 바랍니다.',
+      showInfoCard: true,
+      infoRows: [
+        { label: '일 시', value: '2026. 11. 11.(수) 14:00 ~ 17:00' },
+        { label: '장 소', value: '본관 3층 제1세미나실 (대강당)' },
+        { label: '대 상', value: '관내 업무 담당자 및 연수 신청자 전원' }
+      ],
+      bullets: [
+        '연수 시작 10분 전까지 등록 및 서명부에 서명해 주시기 바랍니다',
+        '연수 교재 및 자료집은 현장 배부(또는 우측 하단 QR 스캔)됩니다',
+        '쾌적한 강의 환경을 위해 휴대전화는 진동 모드로 전환 부탁드립니다'
+      ],
+      bulletStyle: 'check', // 'dot' | 'number' | 'check' | 'arrow'
+      footerOrg: '교육연수운영부',
+      footerContact: '연수지원팀 (내선 302번)',
+      showDate: true,
+      customDate: nowDateStr,
+      stampText: '',
+      showQr: false,
+      qrText: 'https://example.com/guide',
+      qrLabel: '연수 자료집 QR',
+      theme: 'royal-blue',
+      icon: 'graduation-cap',
+      font: 'font-pretendard',
+      align: 'text-center',
+      frame: 'double-line',
+      iconSize: 64,
+      zoom: 1,
+      ...DEFAULT_TYPO
+    };
+
+    // --- Undo / Redo History ---
+    const historyStack = [];
+    const redoStack = [];
+    let isRestoringHistory = false;
+
+    function pushHistory() {
+      if (isRestoringHistory) return;
+      const snap = JSON.stringify(state);
+      if (historyStack.length > 0 && historyStack[historyStack.length - 1] === snap) return;
+      historyStack.push(snap);
+      if (historyStack.length > 40) historyStack.shift();
+      redoStack.length = 0;
+      updateUndoRedoButtons();
+      try {
+        localStorage.setItem('a4_studio_autosave_v2', snap);
+      } catch (e) {}
+    }
+
+    function updateUndoRedoButtons() {
+      const btnUndo = document.getElementById('btn-undo');
+      const btnRedo = document.getElementById('btn-redo');
+      if (btnUndo) btnUndo.disabled = historyStack.length <= 1;
+      if (btnRedo) btnRedo.disabled = redoStack.length === 0;
+    }
+
+    // --- 24 SVG Icons (Work, Event, Arrows, Facility) ---
+    const ICONS = {
+      'graduation-cap': `<svg class="w-full h-full" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21.42 10.922a1 1 0 0 0-.019-1.838L12.83 5.18a2 2 0 0 0-1.66 0L2.6 9.08a1 1 0 0 0 0 1.832l8.57 3.908a2 2 0 0 0 1.66 0z"/><path d="M22 10v6"/><path d="M6 12.5V16a6 3 0 0 0 12 0v-3.5"/></svg>`,
+      'users': `<svg class="w-full h-full" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M22 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>`,
+      'presentation': `<svg class="w-full h-full" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M2 3h20"/><path d="M21 3v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V3"/><path d="m7 21 5-5 5 5"/></svg>`,
+      'clipboard-check': `<svg class="w-full h-full" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect width="8" height="4" x="8" y="2" rx="1" ry="1"/><path d="M16 4h2a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h2"/><path d="m9 14 2 2 4-4"/></svg>`,
+      'calendar': `<svg class="w-full h-full" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect width="18" height="18" x="3" y="4" rx="2"/><line x1="16" x2="16" y1="2" y2="6"/><line x1="8" x2="8" y1="2" y2="6"/><line x1="3" x2="21" y1="10" y2="10"/></svg>`,
+      'map-pin': `<svg class="w-full h-full" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 10c0 6-8 12-8 12s-8-6-8-12a8 8 0 0 1 16 0Z"/><circle cx="12" cy="10" r="3"/></svg>`,
+      'arrow-right': `<svg class="w-full h-full" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14"/><path d="m12 5 7 7-7 7"/></svg>`,
+      'arrow-left': `<svg class="w-full h-full" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M19 12H5"/><path d="m12 19-7-7 7-7"/></svg>`,
+      'arrow-up': `<svg class="w-full h-full" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M12 19V5"/><path d="m5 12 7-7 7 7"/></svg>`,
+      'sparkles': `<svg class="w-full h-full" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m12 3-1.912 5.813a2 2 0 0 1-1.275 1.275L3 12l5.813 1.912a2 2 0 0 1 1.275 1.275L12 21l1.912-5.813a2 2 0 0 1 1.275-1.275L21 12l-5.813-1.912a2 2 0 0 1-1.275-1.275L12 3Z"/></svg>`,
+      'mic': `<svg class="w-full h-full" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2a3 3 0 0 0-3 3v7a3 3 0 0 0 6 0V5a3 3 0 0 0-3-3Z"/><path d="M19 10v2a7 7 0 0 1-14 0v-2"/><line x1="12" x2="12" y1="19" y2="22"/></svg>`,
+      'info': `<svg class="w-full h-full" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><path d="M12 16v-4"/><path d="M12 8h.01"/></svg>`,
+      'alert-triangle': `<svg class="w-full h-full" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m21.73 18-8-14a2 2 0 0 0-3.48 0l-8 14A2 2 0 0 0 4 21h16a2 2 0 0 0 1.73-3Z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>`,
+      'ban': `<svg class="w-full h-full" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><path d="m4.9 4.9 14.2 14.2"/></svg>`,
+      'bell': `<svg class="w-full h-full" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M6 8a6 6 0 0 1 12 0c0 7 3 9 3 9H3s3-2 3-9"/><path d="M10.3 21a1.94 1.94 0 0 0 3.4 0"/></svg>`,
+      'coffee': `<svg class="w-full h-full" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M17 8h1a4 4 0 0 1 0 8h-1"/><path d="M3 8h14v9a4 4 0 0 1-4 4H7a4 4 0 0 1-4-4Z"/><line x1="6" y1="2" x2="6" y2="4"/><line x1="10" y1="2" x2="10" y2="4"/><line x1="14" y1="2" x2="14" y2="4"/></svg>`,
+      'wifi': `<svg class="w-full h-full" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 20h.01"/><path d="M2 8.82a15 15 0 0 1 20 0"/><path d="M5 12.86a10 10 0 0 1 14 0"/><path d="M8.5 16.43a5 5 0 0 1 7 0"/></svg>`,
+      'volume-x': `<svg class="w-full h-full" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5"/><line x1="22" y1="9" x2="16" y2="15"/><line x1="16" y1="9" x2="22" y2="15"/></svg>`,
+      'clock': `<svg class="w-full h-full" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>`,
+      'leaf': `<svg class="w-full h-full" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M11 20A7 7 0 0 1 9.8 6.1C15.5 5 17 4.48 19 2c1 2 2 4.18 2 8 0 5.5-4.78 10-10 10Z"/><path d="M2 21c0-3 1.85-5.36 5.08-6C9.5 14.52 12 13 13 12"/></svg>`,
+      'wrench': `<svg class="w-full h-full" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14.7 6.3a1 1 0 0 0 0 1.4l1.6 1.6a1 1 0 0 0 1.4 0l3.77-3.77a6 6 0 0 1-7.94 7.94l-6.91 6.91a2.12 2.12 0 0 1-3-3l6.91-6.91a6 6 0 0 1 7.94-7.94l-3.76 3.76z"/></svg>`,
+      'shield-alert': `<svg class="w-full h-full" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 13c0 5-3.5 7.5-7.66 8.95a1 1 0 0 1-.67-.01C7.5 20.5 4 18 4 13V6a1 1 0 0 1 1-1c2 0 4.5-1.2 6.24-2.72a1.17 1.17 0 0 1 1.52 0C14.51 3.81 17 5 19 5a1 1 0 0 1 1 1z"/><path d="M12 8v4"/><path d="M12 16h.01"/></svg>`,
+      'parking': `<svg class="w-full h-full" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><path d="M9 17V7h4a3 3 0 0 1 0 6H9"/></svg>`,
+      'eye': `<svg class="w-full h-full" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M2 12s3-7 10-7 10 7 10 7-3 7-10 7-10-7-10-7Z"/><circle cx="12" cy="12" r="3"/></svg>`
+    };
+
+    // --- Preset Templates Database (Work/Event prioritized) ---
+    const PRESETS = {
+      training: {
+        category: '연수안내',
+        orientation: 'portrait',
+        badge: '2026 직무연수 안내',
+        title: '2026학년도 역량 강화 직무연수 안내',
+        subtitle: '참석자 여러분을 진심으로 환영합니다. 원활한 연수 진행을 위해 아래 안내 사항을 확인해 주시기 바랍니다.',
+        showInfoCard: true,
+        infoRows: [
+          { label: '일 시', value: `${nowDateStr} 14:00 ~ 17:00` },
+          { label: '장 소', value: '본관 3층 제1세미나실 (대강당)' },
+          { label: '대 상', value: '관내 업무 담당자 및 연수 신청자 전원' }
+        ],
+        bullets: [
+          '연수 시작 10분 전까지 등록부 서명 후 입실해 주시기 바랍니다',
+          '연수 교재 및 자료집은 등록 데스크에서 배부합니다',
+          '강의 집중을 위해 휴대전화는 무음 또는 진동으로 설정 바랍니다'
+        ],
+        bulletStyle: 'check',
+        footerOrg: '교육연수운영부',
+        footerContact: '연수지원팀 (내선 302번)',
+        theme: 'royal-blue',
+        icon: 'graduation-cap',
+        font: 'font-pretendard',
+        align: 'text-center',
+        frame: 'double-line',
+        iconSize: 64,
+        titleSize: 38
+      },
+      council: {
+        category: '협의회',
+        orientation: 'portrait',
+        badge: 'COUNCIL MEETING / 협의회 안내',
+        title: '2026년 정기 업무 협의회 개최 안내',
+        subtitle: '바쁘신 일정 중에도 참석해 주신 위원님들께 깊이 감사드립니다.',
+        showInfoCard: true,
+        infoRows: [
+          { label: '일 시', value: `${nowDateStr} 10:30 ~ 12:00` },
+          { label: '장 소', value: '행정동 2층 소회의실 (제2협의실)' },
+          { label: '안 건', value: '하반기 주요 사업 추진 현황 점검 및 협력 방안 협의' }
+        ],
+        bullets: [
+          '지정된 좌석표를 확인하신 후 착석해 주시기 바랍니다',
+          '회의 자료는 좌석에 비치되어 있으며 대외비를 유지해 주세요',
+          '주차권 등록은 회의 종료 후 담당 간사에게 요청해 주십시오'
+        ],
+        bulletStyle: 'number',
+        footerOrg: '기획조정협의회',
+        footerContact: '운영간사 (내선 108번)',
+        theme: 'formal',
+        icon: 'users',
+        font: 'font-serif',
+        align: 'text-center',
+        frame: 'double-line',
+        iconSize: 64,
+        titleSize: 38
+      },
+      seminar: {
+        category: '행사안내',
+        orientation: 'portrait',
+        badge: 'SPECIAL EVENT / 초청 행사 안내',
+        title: '미래 교육 혁신 워크숍 및 초청 특강',
+        subtitle: '새로운 변화와 인사이트를 나누는 뜻깊은 자리에 함께해 주셔서 감사합니다.',
+        showInfoCard: true,
+        infoRows: [
+          { label: '일 시', value: `${nowDateStr} 13:30 ~ 16:30` },
+          { label: '장 소', value: '비전홀 1층 컨퍼런스룸' },
+          { label: '강 연', value: '제1부 기조강연 / 제2부 분임 토의 및 질의응답' }
+        ],
+        bullets: [
+          '1층 로비에서 명찰 패용 후 입장해 주시기 바랍니다',
+          '쉬는 시간에는 로비 다과 코너를 자유롭게 이용하실 수 있습니다',
+          '행사 종료 후 만족도 설문 참여를 부탁드립니다'
+        ],
+        bulletStyle: 'dot',
+        footerOrg: '미래혁신추진단',
+        footerContact: '행사운영본부',
+        theme: 'purple-festa',
+        icon: 'sparkles',
+        font: 'font-pretendard',
+        align: 'text-center',
+        frame: 'top-accent',
+        iconSize: 64,
+        titleSize: 40
+      },
+      direction: {
+        category: '방향안내',
+        orientation: 'landscape',
+        badge: 'DIRECTION / 행사장 오시는 길',
+        title: '직무연수 · 협의회 회의실 안내 →',
+        subtitle: '복도 끝 엘리베이터를 이용하여 3층 우측 대회의실로 이동해 주시기 바랍니다.',
+        showInfoCard: true,
+        infoRows: [
+          { label: '행사명', value: '2026년 업무 담당자 직무연수 및 정기 협의회' },
+          { label: '장 소', value: '본관 3층 제1세미나실 (우측 방향 50m)' }
+        ],
+        bullets: [
+          '접수 및 등록 데스크는 3층 회의실 입구 앞에 마련되어 있습니다',
+          '화장실은 엘리베이터 좌측 복도를 이용해 주십시오'
+        ],
+        bulletStyle: 'arrow',
+        footerOrg: '행사안내지원팀',
+        footerContact: '안내데스크 문의',
+        theme: 'royal-blue',
+        icon: 'arrow-right',
+        font: 'font-impact',
+        align: 'text-center',
+        frame: 'solid-bold',
+        iconSize: 96,
+        titleSize: 48
+      },
+      registration: {
+        category: '행사안내',
+        orientation: 'landscape',
+        badge: 'REGISTRATION DESK / 접수 및 등록처',
+        title: '연수 · 행사 참석자 등록처',
+        subtitle: '소속과 성함을 확인하시고 참석자 서명부에 서명하신 후 명찰과 자료집을 수령해 주세요.',
+        showInfoCard: false,
+        infoRows: [
+          { label: '일 시', value: `${nowDateStr} 13:30부터 등록 접수` },
+          { label: '장 소', value: '세미나실 입구 등록데스크' }
+        ],
+        bullets: [
+          '1단계: 참석자 명단 확인 및 자필 서명',
+          '2단계: 명찰 및 연수 자료집(교재) 수령',
+          '3단계: 지정 좌석 확인 후 입실 (차량 번호 등록 신청 가능)'
+        ],
+        bulletStyle: 'number',
+        footerOrg: '행사운영지원팀',
+        footerContact: '현장 안내 요원에게 문의해 주세요',
+        theme: 'formal',
+        icon: 'clipboard-check',
+        font: 'font-pretendard',
+        align: 'text-center',
+        frame: 'corner-accent',
+        iconSize: 72,
+        titleSize: 44
+      },
+      danger: {
+        category: '일반안내',
+        orientation: 'portrait',
+        badge: 'DANGER / 위험 경고',
+        title: '관계자 외 출입을 금합니다',
+        subtitle: '안전사고 예방 및 시설 보안을 위해 무단 출입을 엄격히 통제하오니 협조 바랍니다.',
+        showInfoCard: false,
+        infoRows: [],
+        bullets: ['출입 승인자 외 진입 절대 불가', 'CCTV 24시간 연속 녹화 중', '방문객은 1층 안내데스크를 이용해 주십시오'],
+        bulletStyle: 'dot',
+        footerOrg: '시설안전관리실',
+        footerContact: '보안상황실 (내선 112)',
+        theme: 'danger',
+        icon: 'alert-triangle',
+        font: 'font-display',
+        align: 'text-center',
+        frame: 'hazard-stripe',
+        iconSize: 80,
+        titleSize: 42
+      },
+      quiet: {
+        category: '일반안내',
+        orientation: 'portrait',
+        badge: 'QUIET ZONE / 정숙 구역',
+        title: '진행 중이오니 정숙해 주세요',
+        subtitle: '현재 내부에서 중요 연수 및 회의가 진행 중입니다. 정숙을 유지해 주시기 바랍니다.',
+        showInfoCard: false,
+        infoRows: [],
+        bullets: ['스마트폰은 반드시 무음/진동 모드 전환', '통화는 복도 끝 로비 공간 이용', '출입문 개폐 시 소음 주의'],
+        bulletStyle: 'check',
+        footerOrg: '운영관리팀',
+        footerContact: '협조에 감사드립니다',
+        theme: 'formal',
+        icon: 'volume-x',
+        font: 'font-pretendard',
+        align: 'text-center',
+        frame: 'double-line',
+        iconSize: 64,
+        titleSize: 40
+      },
+      cafe: {
+        category: '일반안내',
+        orientation: 'landscape',
+        badge: 'WELCOME / 무선 인터넷 안내',
+        title: '무료 와이파이(Wi-Fi) 이용 안내',
+        subtitle: '방문해 주셔서 감사합니다. 행사장 및 휴게 공간에서 무료 무선 인터넷을 이용하실 수 있습니다.',
+        showInfoCard: true,
+        infoRows: [
+          { label: '네트워크(ID)', value: 'Guest_Free_WiFi_5G' },
+          { label: '비밀번호(PW)', value: 'welcome2026!' }
+        ],
+        bullets: ['보안을 위해 중요 개인정보 입력 시 주의해 주시기 바랍니다', '연결 오류 시 단말기 Wi-Fi를 껐다 켜주십시오'],
+        bulletStyle: 'dot',
+        footerOrg: '정보화지원팀',
+        footerContact: '헬프데스크',
+        theme: 'cafe',
+        icon: 'wifi',
+        font: 'font-pretendard',
+        align: 'text-center',
+        frame: 'corner-accent',
+        iconSize: 64,
+        titleSize: 40
+      },
+      check: {
+        category: '일반안내',
+        orientation: 'landscape',
+        badge: 'MAINTENANCE / 시설 점검',
+        title: '시설 정기 점검 및 보수 작업 중',
+        subtitle: '안전하고 쾌적한 환경 조성을 위해 시설 점검을 실시하고 있으니 우회하여 이용해 주십시오.',
+        showInfoCard: true,
+        infoRows: [
+          { label: '점검 일시', value: `${nowDateStr} 13:00 ~ 16:00` },
+          { label: '점검 구역', value: '본관 엘리베이터 및 공조 설비' }
+        ],
+        bullets: ['점검 시간 동안 비상계단 및 별관 통로를 이용해 주세요'],
+        bulletStyle: 'dot',
+        footerOrg: '시설관리팀',
+        footerContact: '상황실 (내선 400)',
+        theme: 'danger',
+        icon: 'wrench',
+        font: 'font-display',
+        align: 'text-center',
+        frame: 'hazard-stripe',
+        iconSize: 64,
+        titleSize: 40
+      },
+      eco: {
+        category: '일반안내',
+        orientation: 'portrait',
+        badge: 'ECO CAMPAIGN / 친환경 실천',
+        title: '다회용 컵 사용 및 분리배출 안내',
+        subtitle: '탄소중립 실천을 위해 행사장 내 일회용품 사용 줄이기에 적극 동참해 주시기 바랍니다.',
+        showInfoCard: false,
+        infoRows: [],
+        bullets: ['개인 텀블러 및 다회용 컵 사용 권장', '음료 잔여물은 비운 뒤 분리수거함에 배출', '종이 자료집 대신 QR 전자교재 활용 권장'],
+        bulletStyle: 'check',
+        footerOrg: '친환경운영위원회',
+        footerContact: '그린캠페인팀',
+        theme: 'eco',
+        icon: 'leaf',
+        font: 'font-pretendard',
+        align: 'text-center',
+        frame: 'corner-accent',
+        iconSize: 64,
+        titleSize: 38
+      }
+    };
+
+    // --- AI Mood Analysis Engine ---
+    function analyzeMood(title, subtitle) {
+      const combined = (title + ' ' + subtitle).toLowerCase();
+
+      if (/연수|교육|강의|강습|아카데미|수강|교원|직무/.test(combined)) {
+        return {
+          theme: 'royal-blue',
+          icon: 'graduation-cap',
+          tag: '🎓 연수 / 교육 모드 감지',
+          desc: '연수·교육 안내 문구입니다. 신뢰감을 주는 로얄 블루 테마와 학사모 아이콘, 더블 라인 프레임을 추천합니다.',
+          font: 'font-pretendard',
+          frame: 'double-line'
+        };
+      }
+      if (/협의회|회의|위원회|간담회|총회|이사회|심의|분과/.test(combined)) {
+        return {
+          theme: 'formal',
+          icon: 'users',
+          tag: '🤝 협의회 / 공식회의 감지',
+          desc: '협의회·회의 안내 문구입니다. 격식 있는 딥 네이비 테마와 명조/프리텐다드 서체를 추천합니다.',
+          font: 'font-serif',
+          frame: 'double-line'
+        };
+      }
+      if (/방향|오시는|화살표|층|이동|입구|우측|좌측|엘리베이터|→|←|↑/.test(combined)) {
+        return {
+          theme: 'royal-blue',
+          icon: 'arrow-right',
+          tag: '➡️ 방향 / 동선 안내 감지',
+          desc: '장소·동선 안내 문구입니다. 멀리서도 잘 보이는 굵은 서체와 대형 화살표 아이콘을 추천합니다.',
+          font: 'font-impact',
+          frame: 'solid-bold'
+        };
+      }
+      if (/행사|세미나|워크숍|포럼|특강|초청|환영|축하|개최|컨퍼런스/.test(combined)) {
+        return {
+          theme: 'purple-festa',
+          icon: 'sparkles',
+          tag: '🎉 행사 / 세미나 모드 감지',
+          desc: '행사·세미나·워크숍 문구입니다. 품격 있는 로얄 퍼플 테마와 상단 강조 프레임을 추천합니다.',
+          font: 'font-pretendard',
+          frame: 'top-accent'
+        };
+      }
+      if (/위험|주의|경고|출입|통제|사고|점검|보수|공사|danger|warning/.test(combined)) {
+        return {
+          theme: 'danger',
+          icon: 'alert-triangle',
+          tag: '⚠️ 주의 / 점검 모드 감지',
+          desc: '안전·주의·점검 문구입니다. 시인성 높은 옐로우/블랙 배색과 해저드 스트라이프를 추천합니다.',
+          font: 'font-display',
+          frame: 'hazard-stripe'
+        };
+      }
+      if (/금지|금연|엄금|적발|비상|화재|절대/.test(combined)) {
+        return {
+          theme: 'red-alert',
+          icon: 'ban',
+          tag: '🚨 긴급 / 금지 모드 감지',
+          desc: '강력한 금지·통제 문구입니다. 선명한 레드 컬러와 금지 픽토그램을 추천합니다.',
+          font: 'font-display',
+          frame: 'solid-bold'
+        };
+      }
+      if (/환경|분리|에코|텀블러|다회용|청렴|자연/.test(combined)) {
+        return {
+          theme: 'eco',
+          icon: 'leaf',
+          tag: '🌱 친환경 / 에코 모드 감지',
+          desc: '환경·캠페인 문구입니다. 포레스트 그린 테마와 나뭇잎 아이콘을 추천합니다.',
+          font: 'font-pretendard',
+          frame: 'corner-accent'
+        };
+      }
+      if (/카페|다과|휴게|와이파이|wifi|커피|음료/.test(combined)) {
+        return {
+          theme: 'cafe',
+          icon: 'coffee',
+          tag: '☕ 다과 / 편의 안내 감지',
+          desc: '편의·휴게 안내 문구입니다. 따뜻한 크림 브라운 테마를 추천합니다.',
+          font: 'font-batang',
+          frame: 'corner-accent'
+        };
+      }
+      return {
+        theme: 'royal-blue',
+        icon: 'info',
+        tag: '📋 비즈니스 표준 안내',
+        desc: '공공·업무 표준 안내 문구입니다. 깔끔한 로얄 블루와 더블 라인 프레임이 잘 어울립니다.',
+        font: 'font-pretendard',
+        frame: 'double-line'
+      };
+    }
+
+    // --- DOM Elements Cache ---
+    const dom = {
+      body: document.body,
+      dynamicPrintStyle: document.getElementById('dynamic-print-style'),
+      zoomStage: document.getElementById('canvas-zoom-stage'),
+      wrapper: document.getElementById('signboard-wrapper'),
+      frameOverlay: document.getElementById('frame-overlay'),
+      badgeContainer: document.getElementById('sign-badge-container'),
+      badge: document.getElementById('sign-badge'),
+      iconContainer: document.getElementById('sign-icon-container'),
+      title: document.getElementById('sign-title'),
+      subtitle: document.getElementById('sign-subtitle'),
+      infoCard: document.getElementById('sign-info-card'),
+      infoRows: document.getElementById('sign-info-rows'),
+      bulletsBox: document.getElementById('sign-bullets-box'),
+      bulletsList: document.getElementById('sign-bullets-list'),
+      footer: document.getElementById('sign-footer'),
+      footerLeft: document.getElementById('sign-footer-left'),
+      footerOrg: document.getElementById('sign-footer-org'),
+      footerDivider: document.getElementById('sign-footer-divider'),
+      footerContact: document.getElementById('sign-footer-contact'),
+      footerRight: document.getElementById('sign-footer-right'),
+      dateDisplay: document.getElementById('sign-date-display'),
+      stampBox: document.getElementById('sign-stamp-box'),
+      qrBox: document.getElementById('sign-qr-box'),
+      qrCanvas: document.getElementById('sign-qr-canvas'),
+      qrLabel: document.getElementById('sign-qr-label'),
+      canvasSpecLabel: document.getElementById('canvas-spec-label'),
+      currentLoadedBadge: document.getElementById('current-loaded-badge'),
+      currentLoadedTitle: document.getElementById('current-loaded-title'),
+
+      // Header & Controls
+      btnPortrait: document.getElementById('btn-portrait'),
+      btnLandscape: document.getElementById('btn-landscape'),
+      btnHeaderSave: document.getElementById('btn-header-save'),
+      btnHeaderSaveLabel: document.getElementById('btn-header-save-label'),
+      btnPrint: document.getElementById('btn-print'),
+      btnExportPng: document.getElementById('btn-export-png'),
+      btnUndo: document.getElementById('btn-undo'),
+      btnRedo: document.getElementById('btn-redo'),
+      btnResetBlank: document.getElementById('btn-reset-blank'),
+
+      // Content Inputs
+      inputBadge: document.getElementById('input-badge'),
+      inputTitle: document.getElementById('input-title'),
+      inputSubtitle: document.getElementById('input-subtitle'),
+      toggleInfoCard: document.getElementById('toggle-info-card'),
+      infoCardInputs: document.getElementById('info-card-inputs'),
+      inputInfoLabel1: document.getElementById('input-info-label-1'),
+      inputInfoVal1: document.getElementById('input-info-val-1'),
+      inputInfoLabel2: document.getElementById('input-info-label-2'),
+      inputInfoVal2: document.getElementById('input-info-val-2'),
+      inputInfoLabel3: document.getElementById('input-info-label-3'),
+      inputInfoVal3: document.getElementById('input-info-val-3'),
+      selectBulletStyle: document.getElementById('select-bullet-style'),
+      btnAddBullet: document.getElementById('btn-add-bullet'),
+      bulletItemsContainer: document.getElementById('bullet-items-container'),
+      inputFooterOrg: document.getElementById('input-footer-org'),
+      inputFooterContact: document.getElementById('input-footer-contact'),
+      toggleShowDate: document.getElementById('toggle-show-date'),
+      inputCustomDate: document.getElementById('input-custom-date'),
+      inputStampText: document.getElementById('input-stamp-text'),
+
+      // Typography Controls
+      btnResetTypography: document.getElementById('btn-reset-typography'),
+      selectFont: document.getElementById('select-font'),
+      selectAlign: document.getElementById('select-align'),
+      rangeTitleSize: document.getElementById('range-title-size'),
+      valTitleSize: document.getElementById('val-title-size'),
+      rangeSubtitleSize: document.getElementById('range-subtitle-size'),
+      valSubtitleSize: document.getElementById('val-subtitle-size'),
+      rangeInfoSize: document.getElementById('range-info-size'),
+      valInfoSize: document.getElementById('val-info-size'),
+      rangeBulletSize: document.getElementById('range-bullet-size'),
+      valBulletSize: document.getElementById('val-bullet-size'),
+      rangeBadgeSize: document.getElementById('range-badge-size'),
+      valBadgeSize: document.getElementById('val-badge-size'),
+      rangeFooterSize: document.getElementById('range-footer-size'),
+      valFooterSize: document.getElementById('val-footer-size'),
+      rangeLineHeight: document.getElementById('range-line-height'),
+      valLineHeight: document.getElementById('val-line-height'),
+      rangeLetterSpacing: document.getElementById('range-letter-spacing'),
+      valLetterSpacing: document.getElementById('val-letter-spacing'),
+      rangeBulletGap: document.getElementById('range-bullet-gap'),
+      valBulletGap: document.getElementById('val-bullet-gap'),
+      rangeCanvasPadding: document.getElementById('range-canvas-padding'),
+      valCanvasPadding: document.getElementById('val-canvas-padding'),
+
+      // Design Controls
+      selectFrame: document.getElementById('select-frame'),
+      rangeIconSize: document.getElementById('range-icon-size'),
+      labelIconSize: document.getElementById('label-icon-size'),
+      iconGrid: document.getElementById('icon-selector-grid'),
+      toggleQr: document.getElementById('toggle-qr'),
+      inputQrText: document.getElementById('input-qr-text'),
+      inputQrLabel: document.getElementById('input-qr-label'),
+
+      // AI Box
+      aiDetectedTag: document.getElementById('ai-detected-tag'),
+      aiDetectedDesc: document.getElementById('ai-detected-desc'),
+      btnApplyRecommendedMood: document.getElementById('btn-apply-recommended-mood'),
+
+      // Vault Controls
+      vaultCountBadge: document.getElementById('vault-count-badge'),
+      dbSyncStatus: document.getElementById('db-sync-status'),
+      selectSaveCategory: document.getElementById('select-save-category'),
+      inputSaveMemo: document.getElementById('input-save-memo'),
+      btnVaultUpdate: document.getElementById('btn-vault-update'),
+      btnVaultSaveNew: document.getElementById('btn-vault-save-new'),
+      vaultEditingNotice: document.getElementById('vault-editing-notice'),
+      inputVaultSearch: document.getElementById('input-vault-search'),
+      selectVaultFilter: document.getElementById('select-vault-filter'),
+      vaultListContainer: document.getElementById('vault-list-container'),
+      btnExportJson: document.getElementById('btn-export-json'),
+      inputImportJson: document.getElementById('input-import-json'),
+
+      // Toast
+      toastMsg: document.getElementById('toast-msg'),
+      toastText: document.getElementById('toast-text'),
+      toastIcon: document.getElementById('toast-icon')
+    };
+
+    // --- Toast Helper ---
+    let toastTimeout = null;
+    function showToast(text, icon = '✅') {
+      dom.toastText.textContent = text;
+      dom.toastIcon.textContent = icon;
+      dom.toastMsg.classList.remove('translate-y-20', 'opacity-0');
+      dom.toastMsg.classList.add('translate-y-0', 'opacity-100');
+      if (toastTimeout) clearTimeout(toastTimeout);
+      toastTimeout = setTimeout(() => {
+        dom.toastMsg.classList.add('translate-y-20', 'opacity-0');
+        dom.toastMsg.classList.remove('translate-y-0', 'opacity-100');
+      }, 2600);
+    }
+
+    // --- Sync Form Inputs from State ---
+    function syncControlsFromState() {
+      dom.inputBadge.value = state.badge || '';
+      dom.inputTitle.value = state.title || '';
+      dom.inputSubtitle.value = state.subtitle || '';
+      dom.toggleInfoCard.checked = !!state.showInfoCard;
+      dom.infoCardInputs.style.display = state.showInfoCard ? 'block' : 'none';
+
+      const rows = state.infoRows || [];
+      dom.inputInfoLabel1.value = rows[0]?.label ?? '일 시';
+      dom.inputInfoVal1.value = rows[0]?.value ?? '';
+      dom.inputInfoLabel2.value = rows[1]?.label ?? '장 소';
+      dom.inputInfoVal2.value = rows[1]?.value ?? '';
+      dom.inputInfoLabel3.value = rows[2]?.label ?? '대 상';
+      dom.inputInfoVal3.value = rows[2]?.value ?? '';
+
+      dom.selectBulletStyle.value = state.bulletStyle || 'check';
+      dom.inputFooterOrg.value = state.footerOrg || '';
+      dom.inputFooterContact.value = state.footerContact || '';
+      dom.toggleShowDate.checked = state.showDate !== false;
+      dom.inputCustomDate.value = state.customDate || nowDateStr;
+      dom.inputStampText.value = state.stampText || '';
+
+      dom.selectFont.value = state.font || 'font-pretendard';
+      dom.selectAlign.value = state.align || 'text-center';
+      dom.selectFrame.value = state.frame || 'double-line';
+
+      // Sliders & Labels
+      dom.rangeTitleSize.value = state.titleSize;
+      dom.valTitleSize.textContent = `${state.titleSize}px`;
+      dom.rangeSubtitleSize.value = state.subtitleSize;
+      dom.valSubtitleSize.textContent = `${state.subtitleSize}px`;
+      dom.rangeInfoSize.value = state.infoSize;
+      dom.valInfoSize.textContent = `${state.infoSize}px`;
+      dom.rangeBulletSize.value = state.bulletSize;
+      dom.valBulletSize.textContent = `${state.bulletSize}px`;
+      dom.rangeBadgeSize.value = state.badgeSize;
+      dom.valBadgeSize.textContent = `${state.badgeSize}px`;
+      dom.rangeFooterSize.value = state.footerSize;
+      dom.valFooterSize.textContent = `${state.footerSize}px`;
+
+      dom.rangeLineHeight.value = state.titleLineHeight;
+      dom.valLineHeight.textContent = state.titleLineHeight;
+      dom.rangeLetterSpacing.value = state.titleLetterSpacing;
+      dom.valLetterSpacing.textContent = `${state.titleLetterSpacing}em`;
+      dom.rangeBulletGap.value = state.bulletGap;
+      dom.valBulletGap.textContent = `${state.bulletGap}px`;
+      dom.rangeCanvasPadding.value = state.canvasPadding;
+      dom.valCanvasPadding.textContent = `${state.canvasPadding}px`;
+
+      dom.rangeIconSize.value = state.iconSize;
+      dom.labelIconSize.textContent = state.iconSize === 0 ? '아이콘 숨김 (0px)' : `크기: ${state.iconSize}px`;
+
+      dom.toggleQr.checked = !!state.showQr;
+      dom.inputQrText.value = state.qrText || '';
+      dom.inputQrLabel.value = state.qrLabel || '';
+
+      dom.selectSaveCategory.value = state.category || '연수안내';
+      dom.inputSaveMemo.value = state.memo || '';
+
+      // Editing Loaded Record Indicator
+      if (state.id) {
+        dom.currentLoadedBadge.classList.remove('hidden');
+        dom.currentLoadedTitle.textContent = (state.title || '안내판').slice(0, 18);
+        dom.btnVaultUpdate.classList.remove('hidden');
+        dom.vaultEditingNotice.classList.remove('hidden');
+        dom.btnHeaderSaveLabel.textContent = '수정 저장';
+      } else {
+        dom.currentLoadedBadge.classList.add('hidden');
+        dom.btnVaultUpdate.classList.add('hidden');
+        dom.vaultEditingNotice.classList.add('hidden');
+        dom.btnHeaderSaveLabel.textContent = '보관함 저장';
+      }
+
+      renderBulletInputs();
+      renderIconSelector();
+    }
+
+    // --- 1. Render Icon Palette ---
+    function renderIconSelector() {
+      dom.iconGrid.innerHTML = '';
+      Object.keys(ICONS).forEach(iconKey => {
+        const btn = document.createElement('button');
+        btn.type = 'button';
+        btn.className = `p-1.5 rounded-lg border flex items-center justify-center transition-all ${
+          state.icon === iconKey
+            ? 'border-amber-500 bg-amber-50 text-amber-700 ring-2 ring-amber-400/40 shadow-2xs'
+            : 'border-slate-200 text-slate-600 hover:border-slate-300 hover:bg-slate-50'
+        }`;
+        btn.innerHTML = `<div class="w-4 h-4">${ICONS[iconKey]}</div>`;
+        btn.title = iconKey;
+        btn.addEventListener('click', () => {
+          state.icon = iconKey;
+          if (state.iconSize === 0) {
+            state.iconSize = 64;
+            dom.rangeIconSize.value = 64;
+            dom.labelIconSize.textContent = '크기: 64px';
+          }
+          renderIconSelector();
+          renderSignboard();
+          pushHistory();
+        });
+        dom.iconGrid.appendChild(btn);
+      });
+    }
+
+    // --- 2. Render Bullets Inputs (with Move Up / Down / Remove) ---
+    function renderBulletInputs() {
+      dom.bulletItemsContainer.innerHTML = '';
+      state.bullets.forEach((bulletText, index) => {
+        const row = document.createElement('div');
+        row.className = 'flex items-center gap-1';
+        row.innerHTML = `
+          <span class="text-[11px] font-bold text-slate-400 w-4 text-center">${index + 1}</span>
+          <input type="text" class="bullet-input flex-1 text-xs px-2.5 py-1.5 rounded border border-slate-300 focus:border-amber-500 outline-none" value="${bulletText.replace(/"/g, '&quot;')}" placeholder="세부 안내 내용 입력">
+          <button type="button" class="btn-up-bullet text-slate-400 hover:text-slate-700 p-1 rounded hover:bg-slate-100 text-[10px]" title="위로 이동" ${index === 0 ? 'disabled' : ''}>▲</button>
+          <button type="button" class="btn-down-bullet text-slate-400 hover:text-slate-700 p-1 rounded hover:bg-slate-100 text-[10px]" title="아래로 이동" ${index === state.bullets.length - 1 ? 'disabled' : ''}>▼</button>
+          <button type="button" class="btn-remove-bullet text-slate-400 hover:text-rose-500 p-1 rounded hover:bg-rose-50 transition" title="항목 삭제">✕</button>
+        `;
+
+        row.querySelector('.bullet-input').addEventListener('input', (e) => {
+          state.bullets[index] = e.target.value;
+          renderSignboard();
+        });
+        row.querySelector('.bullet-input').addEventListener('change', () => pushHistory());
+
+        row.querySelector('.btn-up-bullet').addEventListener('click', () => {
+          if (index === 0) return;
+          const tmp = state.bullets[index - 1];
+          state.bullets[index - 1] = state.bullets[index];
+          state.bullets[index] = tmp;
+          renderBulletInputs();
+          renderSignboard();
+          pushHistory();
+        });
+
+        row.querySelector('.btn-down-bullet').addEventListener('click', () => {
+          if (index >= state.bullets.length - 1) return;
+          const tmp = state.bullets[index + 1];
+          state.bullets[index + 1] = state.bullets[index];
+          state.bullets[index] = tmp;
+          renderBulletInputs();
+          renderSignboard();
+          pushHistory();
+        });
+
+        row.querySelector('.btn-remove-bullet').addEventListener('click', () => {
+          state.bullets.splice(index, 1);
+          renderBulletInputs();
+          renderSignboard();
+          pushHistory();
+        });
+
+        dom.bulletItemsContainer.appendChild(row);
+      });
+    }
+    // --- 3. Theme Selector Active State ---
+    function updateThemeSelectorButtons() {
+      document.querySelectorAll('.theme-choice-btn').forEach(btn => {
+        const theme = btn.getAttribute('data-theme');
+        if (theme === state.theme) {
+          btn.classList.add('border-amber-500', 'bg-amber-50/70', 'ring-2', 'ring-amber-500/30');
+          btn.classList.remove('border-slate-200');
+        } else {
+          btn.classList.remove('border-amber-500', 'bg-amber-50/70', 'ring-2', 'ring-amber-500/30');
+          btn.classList.add('border-slate-200');
+        }
+      });
+    }
+
+    // --- 4. Theme Palette Definitions ---
+    const THEME_PALETTES = {
+      'royal-blue': {
+        bg: '#f8faff',
+        text: '#0f172a',
+        titleColor: '#1e3a8a',
+        subtitleColor: '#334155',
+        accent: '#1d4ed8',
+        badgeBg: '#1d4ed8',
+        badgeText: '#ffffff',
+        badgeBorder: '#1e40af',
+        boxBg: 'rgba(219, 234, 254, 0.55)',
+        boxBorder: '#bfdbfe',
+        labelBg: '#dbeafe',
+        labelText: '#1e3a8a'
+      },
+      'formal': {
+        bg: '#f8fafc',
+        text: '#0f172a',
+        titleColor: '#0f172a',
+        subtitleColor: '#475569',
+        accent: '#1e293b',
+        badgeBg: '#0f172a',
+        badgeText: '#ffffff',
+        badgeBorder: '#1e293b',
+        boxBg: 'rgba(226, 232, 240, 0.55)',
+        boxBorder: '#cbd5e1',
+        labelBg: '#e2e8f0',
+        labelText: '#0f172a'
+      },
+      'purple-festa': {
+        bg: '#faf5ff',
+        text: '#1e1b4b',
+        titleColor: '#4c1d95',
+        subtitleColor: '#4338ca',
+        accent: '#6d28d9',
+        badgeBg: '#6d28d9',
+        badgeText: '#ffffff',
+        badgeBorder: '#5b21b6',
+        boxBg: 'rgba(237, 233, 254, 0.6)',
+        boxBorder: '#ddd6fe',
+        labelBg: '#ede9fe',
+        labelText: '#4c1d95'
+      },
+      'eco': {
+        bg: '#f0fdf4',
+        text: '#14532d',
+        titleColor: '#064e3b',
+        subtitleColor: '#166534',
+        accent: '#047857',
+        badgeBg: '#047857',
+        badgeText: '#ffffff',
+        badgeBorder: '#065f46',
+        boxBg: 'rgba(209, 250, 229, 0.6)',
+        boxBorder: '#a7f3d0',
+        labelBg: '#d1fae5',
+        labelText: '#065f46'
+      },
+      'cafe': {
+        bg: '#fdfbf7',
+        text: '#38281d',
+        titleColor: '#451a03',
+        subtitleColor: '#78350f',
+        accent: '#92400e',
+        badgeBg: '#78350f',
+        badgeText: '#fffbeb',
+        badgeBorder: '#92400e',
+        boxBg: 'rgba(254, 243, 199, 0.5)',
+        boxBorder: '#fde68a',
+        labelBg: '#fef3c7',
+        labelText: '#78350f'
+      },
+      'minimal': {
+        bg: '#ffffff',
+        text: '#171717',
+        titleColor: '#0a0a0a',
+        subtitleColor: '#525252',
+        accent: '#171717',
+        badgeBg: '#f5f5f5',
+        badgeText: '#171717',
+        badgeBorder: '#d4d4d4',
+        boxBg: '#fafafa',
+        boxBorder: '#e5e5e5',
+        labelBg: '#f5f5f5',
+        labelText: '#171717'
+      },
+      'danger': {
+        bg: '#fffbeb',
+        text: '#1c1917',
+        titleColor: '#451a03',
+        subtitleColor: '#78350f',
+        accent: '#d97706',
+        badgeBg: '#fbbf24',
+        badgeText: '#09090b',
+        badgeBorder: '#f59e0b',
+        boxBg: 'rgba(254, 243, 199, 0.75)',
+        boxBorder: '#fcd34d',
+        labelBg: '#fde68a',
+        labelText: '#78350f'
+      },
+      'red-alert': {
+        bg: '#fff1f2',
+        text: '#1f2937',
+        titleColor: '#be123c',
+        subtitleColor: '#374151',
+        accent: '#e11d48',
+        badgeBg: '#e11d48',
+        badgeText: '#ffffff',
+        badgeBorder: '#be123c',
+        boxBg: 'rgba(255, 228, 230, 0.65)',
+        boxBorder: '#fecdd3',
+        labelBg: '#ffe4e6',
+        labelText: '#9f1239'
+      }
+    };
+
+    // --- 5. Main Signboard Renderer ---
+    function renderSignboard() {
+      const w = dom.wrapper;
+      const palette = THEME_PALETTES[state.theme] || THEME_PALETTES['royal-blue'];
+
+      // Orientation & Dynamic @page Print Rule
+      if (state.orientation === 'portrait') {
+        w.classList.remove('signboard-landscape');
+        w.classList.add('signboard-portrait');
+        dom.body.classList.remove('orientation-landscape');
+        dom.body.classList.add('orientation-portrait');
+        dom.btnPortrait.className = 'px-2.5 py-1 text-xs font-bold rounded-md transition-all flex items-center gap-1 bg-amber-500 text-slate-950 shadow-sm';
+        dom.btnLandscape.className = 'px-2.5 py-1 text-xs font-medium rounded-md transition-all flex items-center gap-1 text-slate-300 hover:text-white';
+        dom.canvasSpecLabel.textContent = 'A4 세로 (210 × 297 mm)';
+        dom.dynamicPrintStyle.textContent = '@page { size: A4 portrait; margin: 0; }';
+      } else {
+        w.classList.remove('signboard-portrait');
+        w.classList.add('signboard-landscape');
+        dom.body.classList.remove('orientation-portrait');
+        dom.body.classList.add('orientation-landscape');
+        dom.btnLandscape.className = 'px-2.5 py-1 text-xs font-bold rounded-md transition-all flex items-center gap-1 bg-amber-500 text-slate-950 shadow-sm';
+        dom.btnPortrait.className = 'px-2.5 py-1 text-xs font-medium rounded-md transition-all flex items-center gap-1 text-slate-300 hover:text-white';
+        dom.canvasSpecLabel.textContent = 'A4 가로 (297 × 210 mm)';
+        dom.dynamicPrintStyle.textContent = '@page { size: A4 landscape; margin: 0; }';
+      }
+
+      // Zoom Stage
+      dom.zoomStage.style.transform = `scale(${state.zoom || 1})`;
+
+      // Padding
+      w.style.padding = `${state.canvasPadding || 48}px`;
+
+      // Font Family
+      w.classList.remove('font-pretendard', 'font-sans', 'font-serif', 'font-myeongjo', 'font-batang', 'font-display', 'font-impact');
+      w.classList.add(state.font || 'font-pretendard');
+
+      // Alignment
+      const isLeft = state.align === 'text-left';
+      dom.title.style.textAlign = isLeft ? 'left' : 'center';
+      dom.subtitle.style.textAlign = isLeft ? 'left' : 'center';
+      dom.iconContainer.style.justifyContent = isLeft ? 'flex-start' : 'center';
+      document.getElementById('sign-header').style.alignItems = isLeft ? 'flex-start' : 'center';
+
+      // Colors & Typography Sizes (Preserved across themes!)
+      w.style.backgroundColor = palette.bg;
+      w.style.color = palette.text;
+
+      // 1) Badge
+      if (state.badge && state.badge.trim()) {
+        dom.badgeContainer.style.display = 'block';
+        dom.badge.textContent = state.badge;
+        dom.badge.style.fontSize = `${state.badgeSize}px`;
+        dom.badge.style.backgroundColor = palette.badgeBg;
+        dom.badge.style.color = palette.badgeText;
+        dom.badge.style.borderColor = palette.badgeBorder;
+      } else {
+        dom.badgeContainer.style.display = 'none';
+      }
+
+      // 2) Icon
+      if (!state.iconSize || state.iconSize <= 0 || !ICONS[state.icon]) {
+        dom.iconContainer.style.display = 'none';
+      } else {
+        dom.iconContainer.style.display = 'flex';
+        dom.iconContainer.innerHTML = `<div style="width:${state.iconSize}px;height:${state.iconSize}px;color:${palette.accent}" class="transition-all">${ICONS[state.icon]}</div>`;
+      }
+
+      // 3) Main Title
+      dom.title.textContent = state.title || '안내 문구를 입력해주세요';
+      dom.title.style.fontSize = `${state.titleSize}px`;
+      dom.title.style.lineHeight = state.titleLineHeight;
+      dom.title.style.letterSpacing = `${state.titleLetterSpacing}em`;
+      dom.title.style.color = palette.titleColor;
+
+      // 4) Subtitle
+      if (state.subtitle && state.subtitle.trim()) {
+        dom.subtitle.style.display = 'block';
+        dom.subtitle.textContent = state.subtitle;
+        dom.subtitle.style.fontSize = `${state.subtitleSize}px`;
+        dom.subtitle.style.color = palette.subtitleColor;
+        dom.subtitle.style.marginLeft = isLeft ? '0' : 'auto';
+        dom.subtitle.style.marginRight = isLeft ? '0' : 'auto';
+      } else {
+        dom.subtitle.style.display = 'none';
+      }
+
+      // 5) Structured Event / Meeting Info Card (일시 / 장소 / 대상)
+      const validInfoRows = (state.infoRows || []).filter(r => r && r.value && r.value.trim());
+      if (state.showInfoCard && validInfoRows.length > 0) {
+        dom.infoCard.style.display = 'block';
+        dom.infoCard.style.borderColor = palette.boxBorder;
+        dom.infoCard.style.backgroundColor = '#ffffff';
+        dom.infoCard.style.marginLeft = isLeft ? '0' : 'auto';
+        dom.infoCard.style.marginRight = isLeft ? '0' : 'auto';
+        dom.infoRows.innerHTML = '';
+        validInfoRows.forEach(r => {
+          const rowEl = document.createElement('div');
+          rowEl.className = 'grid grid-cols-12 items-stretch';
+          rowEl.style.borderColor = palette.boxBorder;
+          rowEl.style.fontSize = `${state.infoSize}px`;
+          rowEl.innerHTML = `
+            <div class="col-span-3 px-3 py-2.5 font-extrabold flex items-center justify-center text-center tracking-wider" style="background-color:${palette.labelBg};color:${palette.labelText}">
+              ${r.label || '항목'}
+            </div>
+            <div class="col-span-9 px-4 py-2.5 font-semibold flex items-center break-keep" style="color:${palette.text}">
+              ${r.value}
+            </div>
+          `;
+          dom.infoRows.appendChild(rowEl);
+        });
+      } else {
+        dom.infoCard.style.display = 'none';
+      }
+
+      // 6) Bullets Box
+      dom.bulletsList.innerHTML = '';
+      const validBullets = (state.bullets || []).filter(b => b && b.trim());
+      if (validBullets.length > 0) {
+        dom.bulletsBox.style.display = 'block';
+        dom.bulletsBox.style.backgroundColor = palette.boxBg;
+        dom.bulletsBox.style.borderColor = palette.boxBorder;
+        dom.bulletsBox.className = `max-w-xl w-full my-2.5 p-4 rounded-xl border text-left ${isLeft ? '' : 'mx-auto'}`;
+        dom.bulletsList.style.display = 'flex';
+        dom.bulletsList.style.flexDirection = 'column';
+        dom.bulletsList.style.gap = `${state.bulletGap}px`;
+
+        validBullets.forEach((bText, idx) => {
+          const li = document.createElement('li');
+          li.className = 'flex items-start gap-2.5 leading-snug font-medium';
+          li.style.fontSize = `${state.bulletSize}px`;
+
+          let markerHtml = '';
+          if (state.bulletStyle === 'number') {
+            markerHtml = `<span class="font-extrabold shrink-0 min-w-[1.25em]" style="color:${palette.accent}">${idx + 1}.</span>`;
+          } else if (state.bulletStyle === 'check') {
+            markerHtml = `<span class="font-bold shrink-0" style="color:${palette.accent}">✔</span>`;
+          } else if (state.bulletStyle === 'arrow') {
+            markerHtml = `<span class="font-bold shrink-0" style="color:${palette.accent}">▸</span>`;
+          } else {
+            markerHtml = `<span class="mt-2 w-2 h-2 rounded-full shrink-0" style="background-color:${palette.accent}"></span>`;
+          }
+
+          li.innerHTML = `${markerHtml}<span class="break-keep">${bText}</span>`;
+          dom.bulletsList.appendChild(li);
+        });
+      } else {
+        dom.bulletsBox.style.display = 'none';
+      }
+
+      // 7) Footer & Date & Stamp & QR
+      dom.footerOrg.textContent = state.footerOrg || '';
+      dom.footerContact.textContent = state.footerContact || '';
+      dom.footerDivider.style.display = (state.footerOrg && state.footerContact) ? 'inline' : 'none';
+      dom.footerLeft.style.display = (state.footerOrg || state.footerContact) ? 'flex' : 'none';
+      dom.footerLeft.style.fontSize = `${state.footerSize}px`;
+
+      if (state.showDate) {
+        dom.footerRight.style.display = 'block';
+        dom.dateDisplay.textContent = state.customDate || nowDateStr;
+        dom.footerRight.style.fontSize = `${Math.max(10, state.footerSize - 1)}px`;
+      } else {
+        dom.footerRight.style.display = 'none';
+      }
+
+      if (state.stampText && state.stampText.trim()) {
+        dom.stampBox.classList.remove('hidden');
+        dom.stampBox.textContent = state.stampText.trim();
+        dom.stampBox.style.borderColor = palette.accent;
+        dom.stampBox.style.color = palette.accent;
+      } else {
+        dom.stampBox.classList.add('hidden');
+      }
+
+      if (state.showQr && state.qrText && state.qrText.trim() && window.QRious) {
+        dom.qrBox.classList.remove('hidden');
+        new QRious({
+          element: dom.qrCanvas,
+          value: state.qrText.trim(),
+          size: 68,
+          level: 'M'
+        });
+        dom.qrLabel.textContent = state.qrLabel || '';
+        dom.qrLabel.style.display = state.qrLabel ? 'block' : 'none';
+      } else {
+        dom.qrBox.classList.add('hidden');
+      }
+
+      // 8) Frame Styles (Fixed bug: always reset inline background styles!)
+      applyFrameStyles(state.frame, palette);
+      updateThemeSelectorButtons();
+    }
+
+    // --- 6. Apply Border Frame Styles ---
+    function applyFrameStyles(frame, palette) {
+      const fo = dom.frameOverlay;
+      fo.innerHTML = '';
+      fo.style.backgroundImage = '';
+      fo.style.backgroundClip = '';
+      fo.style.borderColor = '';
+      fo.className = 'absolute inset-4 pointer-events-none transition-all';
+
+      if (frame === 'double-line') {
+        fo.style.border = `3px solid ${palette.accent}33`;
+        fo.style.padding = '5px';
+        fo.innerHTML = `<div class="w-full h-full" style="border: 1px solid ${palette.accent}55;"></div>`;
+      } else if (frame === 'solid-bold') {
+        fo.style.border = `5px solid ${palette.accent}`;
+      } else if (frame === 'corner-accent') {
+        const c = palette.accent;
+        fo.innerHTML = `
+          <div class="absolute top-0 left-0 w-9 h-9" style="border-top:5px solid ${c};border-left:5px solid ${c};"></div>
+          <div class="absolute top-0 right-0 w-9 h-9" style="border-top:5px solid ${c};border-right:5px solid ${c};"></div>
+          <div class="absolute bottom-0 left-0 w-9 h-9" style="border-bottom:5px solid ${c};border-left:5px solid ${c};"></div>
+          <div class="absolute bottom-0 right-0 w-9 h-9" style="border-bottom:5px solid ${c};border-right:5px solid ${c};"></div>
+        `;
+      } else if (frame === 'top-accent') {
+        fo.style.border = `1px solid ${palette.accent}30`;
+        fo.innerHTML = `<div class="w-full h-3" style="background-color:${palette.accent};"></div>`;
+      } else if (frame === 'hazard-stripe') {
+        fo.style.padding = '12px';
+        fo.style.backgroundImage = 'repeating-linear-gradient(-45deg, #18181b, #18181b 12px, #f59e0b 12px, #f59e0b 24px)';
+        fo.innerHTML = `<div class="w-full h-full" style="background-color:${palette.bg};"></div>`;
+      } else {
+        fo.className += ' hidden';
+      }
+    }
+
+    // --- 7. Vault Storage Manager (LocalStorage + Cloudflare D1 API Hybrid) ---
+    const VAULT_STORAGE_KEY = 'a4_studio_vault_records_v2';
+    let vaultRecords = [];
+    let isCloudApiConnected = false;
+
+    function loadLocalVault() {
+      try {
+        const raw = localStorage.getItem(VAULT_STORAGE_KEY);
+        if (raw) {
+          vaultRecords = JSON.parse(raw);
+        } else {
+          // Seed initial helpful sample records for the user
+          vaultRecords = [
+            {
+              id: 'sample-training-1',
+              title: '2026학년도 역량 강화 직무연수 안내',
+              category: '연수안내',
+              memo: '기본 직무연수 양식',
+              orientation: 'portrait',
+              updated_at: new Date().toISOString(),
+              state_json: JSON.stringify({ ...state, ...PRESETS.training, id: 'sample-training-1' })
+            },
+            {
+              id: 'sample-council-1',
+              title: '2026년 정기 업무 협의회 개최 안내',
+              category: '협의회',
+              memo: '정기 협의회 표준 양식',
+              orientation: 'portrait',
+              updated_at: new Date().toISOString(),
+              state_json: JSON.stringify({ ...state, ...PRESETS.council, id: 'sample-council-1' })
+            }
+          ];
+          localStorage.setItem(VAULT_STORAGE_KEY, JSON.stringify(vaultRecords));
+        }
+      } catch (e) {
+        vaultRecords = [];
+      }
+    }
+
+    function saveLocalVault() {
+      try {
+        localStorage.setItem(VAULT_STORAGE_KEY, JSON.stringify(vaultRecords));
+      } catch (e) {}
+    }
+
+    async function fetchVaultFromCloud() {
+      try {
+        const res = await fetch('/api/signs', { headers: { 'Accept': 'application/json' } });
+        if (!res.ok) throw new Error('API not active');
+        const data = await res.json();
+        if (Array.isArray(data.items)) {
+          isCloudApiConnected = true;
+          if (data.items.length === 0 && vaultRecords.length > 0) {
+            // Seed empty D1 database with existing local/sample records
+            for (const rec of vaultRecords) {
+              await fetch('/api/signs', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(rec)
+              });
+            }
+          } else if (data.items.length > 0) {
+            vaultRecords = data.items;
+            saveLocalVault();
+          }
+          dom.dbSyncStatus.textContent = '☁️ Cloudflare D1 연결됨';
+          dom.dbSyncStatus.className = 'text-[10px] font-bold px-2 py-0.5 rounded-full bg-emerald-100 text-emerald-800';
+          renderVaultList();
+        }
+      } catch (e) {
+        isCloudApiConnected = false;
+        dom.dbSyncStatus.textContent = '💾 브라우저 보관함 (오프라인/로컬)';
+      }
+    }
+
+    async function saveSignToVault(asNew = true) {
+      const targetId = (!asNew && state.id) ? state.id : ('sign_' + Date.now() + '_' + Math.random().toString(36).slice(2, 6));
+      state.id = targetId;
+      state.category = dom.selectSaveCategory.value || '연수안내';
+      state.memo = dom.inputSaveMemo.value.trim();
+
+      const record = {
+        id: targetId,
+        title: (state.title || '제목 없는 안내판').replace(/\n+/g, ' ').trim(),
+        category: state.category,
+        memo: state.memo,
+        orientation: state.orientation,
+        updated_at: new Date().toISOString(),
+        state_json: JSON.stringify(state)
+      };
+
+      // Update local array first for instant UI response
+      const existingIdx = vaultRecords.findIndex(r => r.id === targetId);
+      if (existingIdx >= 0) {
+        vaultRecords[existingIdx] = record;
+      } else {
+        vaultRecords.unshift(record);
+      }
+      saveLocalVault();
+
+      // Sync to Cloudflare D1 API if available
+      if (isCloudApiConnected) {
+        try {
+          const method = (!asNew && existingIdx >= 0) ? 'PUT' : 'POST';
+          const url = method === 'PUT' ? `/api/signs/${encodeURIComponent(targetId)}` : '/api/signs';
+          await fetch(url, {
+            method,
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(record)
+          });
+        } catch (err) {
+          console.warn('Cloud sync fallback to local:', err);
+        }
+      }
+
+      syncControlsFromState();
+      renderVaultList();
+      showToast(asNew ? '보관함에 새 안내판으로 저장되었습니다!' : '수정된 내용이 기존 안내판에 덮어쓰기 저장되었습니다!');
+    }
+
+    async function deleteSignFromVault(id) {
+      vaultRecords = vaultRecords.filter(r => r.id !== id);
+      saveLocalVault();
+      if (state.id === id) {
+        state.id = null;
+        syncControlsFromState();
+      }
+      if (isCloudApiConnected) {
+        try {
+          await fetch(`/api/signs/${encodeURIComponent(id)}`, { method: 'DELETE' });
+        } catch (e) {}
+      }
+      renderVaultList();
+      showToast('안내판이 삭제되었습니다.', '🗑️');
+    }
+
+    function renderVaultList() {
+      dom.vaultCountBadge.textContent = vaultRecords.length;
+      const query = (dom.inputVaultSearch.value || '').trim().toLowerCase();
+      const catFilter = dom.selectVaultFilter.value || 'ALL';
+
+      const filtered = vaultRecords.filter(r => {
+        const matchCat = catFilter === 'ALL' || r.category === catFilter;
+        const matchQuery = !query || (r.title || '').toLowerCase().includes(query) || (r.memo || '').toLowerCase().includes(query);
+        return matchCat && matchQuery;
+      });
+
+      dom.vaultListContainer.innerHTML = '';
+      if (filtered.length === 0) {
+        dom.vaultListContainer.innerHTML = `
+          <div class="text-center py-8 text-xs text-slate-400 border border-dashed border-slate-200 rounded-xl">
+            저장된 안내판이 없습니다. 상단에서 안내판을 저장해 보세요!
+          </div>
+        `;
+        return;
+      }
+
+      filtered.forEach(item => {
+        const isCurrent = state.id === item.id;
+        const dateStr = item.updated_at ? new Date(item.updated_at).toLocaleString('ko-KR', { month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit' }) : '';
+        const card = document.createElement('div');
+        card.className = `p-3 rounded-xl border transition-all ${
+          isCurrent ? 'border-indigo-500 bg-indigo-50/50 ring-1 ring-indigo-400' : 'border-slate-200 bg-white hover:border-slate-300'
+        }`;
+        card.innerHTML = `
+          <div class="flex items-start justify-between gap-2">
+            <div class="min-w-0 flex-1">
+              <div class="flex items-center gap-1.5 mb-1">
+                <span class="text-[10px] font-bold px-2 py-0.5 rounded bg-slate-100 text-slate-700">${item.category || '일반'}</span>
+                <span class="text-[10px] text-slate-400">${item.orientation === 'landscape' ? '가로형' : '세로형'}</span>
+                ${isCurrent ? '<span class="text-[10px] font-bold text-indigo-600">● 현재 편집 중</span>' : ''}
+              </div>
+              <h4 class="text-xs font-bold text-slate-900 truncate">${item.title || '제목 없음'}</h4>
+              ${item.memo ? `<p class="text-[11px] text-slate-500 truncate mt-0.5">${item.memo}</p>` : ''}
+              <p class="text-[10px] text-slate-400 mt-1">수정: ${dateStr}</p>
+            </div>
+            <div class="flex flex-col gap-1 shrink-0">
+              <button type="button" class="btn-load-record px-2.5 py-1 rounded-lg bg-slate-900 hover:bg-slate-700 text-white text-[11px] font-bold transition">불러오기</button>
+              <button type="button" class="btn-del-record px-2 py-0.5 rounded text-slate-400 hover:text-rose-600 hover:bg-rose-50 text-[10px] transition">삭제</button>
+            </div>
+          </div>
+        `;
+
+        card.querySelector('.btn-load-record').addEventListener('click', () => {
+          try {
+            const parsed = typeof item.state_json === 'string' ? JSON.parse(item.state_json) : item.state_json;
+            Object.assign(state, DEFAULT_TYPO, parsed, { id: item.id, category: item.category || '연수안내', memo: item.memo || '' });
+            syncControlsFromState();
+            renderSignboard();
+            renderVaultList();
+            pushHistory();
+            showToast(`'${item.title}' 안내판을 불러왔습니다. 수정 후 [수정 저장]을 누르세요.`);
+          } catch (e) {
+            showToast('안내판 데이터를 불러오는 중 오류가 발생했습니다.', '❌');
+          }
+        });
+
+        card.querySelector('.btn-del-record').addEventListener('click', () => {
+          deleteSignFromVault(item.id);
+        });
+
+        dom.vaultListContainer.appendChild(card);
+      });
+    }
+
+    // --- 8. Live Input Sync & Mood Update ---
+    let currentRecommendation = null;
+    function syncInputsToState() {
+      state.badge = dom.inputBadge.value;
+      state.title = dom.inputTitle.value;
+      state.subtitle = dom.inputSubtitle.value;
+      state.showInfoCard = dom.toggleInfoCard.checked;
+      dom.infoCardInputs.style.display = state.showInfoCard ? 'block' : 'none';
+
+      state.infoRows = [
+        { label: dom.inputInfoLabel1.value, value: dom.inputInfoVal1.value },
+        { label: dom.inputInfoLabel2.value, value: dom.inputInfoVal2.value },
+        { label: dom.inputInfoLabel3.value, value: dom.inputInfoVal3.value }
+      ];
+
+      state.bulletStyle = dom.selectBulletStyle.value;
+      state.footerOrg = dom.inputFooterOrg.value;
+      state.footerContact = dom.inputFooterContact.value;
+      state.showDate = dom.toggleShowDate.checked;
+      state.customDate = dom.inputCustomDate.value;
+      state.stampText = dom.inputStampText.value;
+      state.showQr = dom.toggleQr.checked;
+      state.qrText = dom.inputQrText.value;
+      state.qrLabel = dom.inputQrLabel.value;
+
+      const mood = analyzeMood(state.title, state.subtitle);
+      currentRecommendation = mood;
+      dom.aiDetectedTag.textContent = mood.tag;
+      dom.aiDetectedDesc.textContent = mood.desc;
+
+      renderSignboard();
+    }
+
+    // --- 9. Event Listeners Initialization ---
+    function initListeners() {
+      // Tab Switching
+      document.querySelectorAll('.tab-btn').forEach(btn => {
+        btn.addEventListener('click', () => {
+          const targetTab = btn.getAttribute('data-tab');
+          document.querySelectorAll('.tab-btn').forEach(b => {
+            b.className = 'tab-btn py-2 px-1 rounded-xl text-slate-600 hover:text-slate-900 transition flex items-center justify-center gap-1';
+          });
+          btn.className = 'tab-btn py-2 px-1 rounded-xl bg-white text-slate-900 shadow-xs transition flex items-center justify-center gap-1';
+
+          document.querySelectorAll('.tab-panel').forEach(p => p.classList.add('hidden'));
+          document.getElementById(`tab-panel-${targetTab}`).classList.remove('hidden');
+        });
+      });
+
+      // Orientation
+      dom.btnPortrait.addEventListener('click', () => {
+        state.orientation = 'portrait';
+        renderSignboard();
+        pushHistory();
+      });
+      dom.btnLandscape.addEventListener('click', () => {
+        state.orientation = 'landscape';
+        renderSignboard();
+        pushHistory();
+      });
+
+      // Zoom Buttons
+      document.querySelectorAll('.zoom-btn').forEach(btn => {
+        btn.addEventListener('click', () => {
+          state.zoom = parseFloat(btn.getAttribute('data-zoom'));
+          document.querySelectorAll('.zoom-btn').forEach(b => {
+            b.className = 'zoom-btn px-1.5 py-0.5 rounded hover:bg-slate-100 text-slate-600';
+          });
+          btn.className = 'zoom-btn px-1.5 py-0.5 rounded bg-amber-500 text-slate-950 font-bold';
+          renderSignboard();
+        });
+      });
+
+      // Undo / Redo
+      function triggerUndo() {
+        if (historyStack.length <= 1) return;
+        isRestoringHistory = true;
+        redoStack.push(historyStack.pop());
+        const prev = JSON.parse(historyStack[historyStack.length - 1]);
+        Object.assign(state, prev);
+        syncControlsFromState();
+        renderSignboard();
+        updateUndoRedoButtons();
+        isRestoringHistory = false;
+      }
+      function triggerRedo() {
+        if (redoStack.length === 0) return;
+        isRestoringHistory = true;
+        const nextSnap = redoStack.pop();
+        historyStack.push(nextSnap);
+        Object.assign(state, JSON.parse(nextSnap));
+        syncControlsFromState();
+        renderSignboard();
+        updateUndoRedoButtons();
+        isRestoringHistory = false;
+      }
+      dom.btnUndo.addEventListener('click', triggerUndo);
+      dom.btnRedo.addEventListener('click', triggerRedo);
+      window.addEventListener('keydown', (e) => {
+        if ((e.ctrlKey || e.metaKey) && e.key.toLowerCase() === 'z' && !e.shiftKey) {
+          if (document.activeElement.tagName !== 'INPUT' && document.activeElement.tagName !== 'TEXTAREA') {
+            e.preventDefault();
+            triggerUndo();
+          }
+        } else if ((e.ctrlKey || e.metaKey) && (e.key.toLowerCase() === 'y' || (e.shiftKey && e.key.toLowerCase() === 'z'))) {
+          if (document.activeElement.tagName !== 'INPUT' && document.activeElement.tagName !== 'TEXTAREA') {
+            e.preventDefault();
+            triggerRedo();
+          }
+        }
+      });
+
+      // Apply Recommended Mood
+      dom.btnApplyRecommendedMood.addEventListener('click', () => {
+        if (!currentRecommendation) return;
+        state.theme = currentRecommendation.theme;
+        state.icon = currentRecommendation.icon;
+        state.font = currentRecommendation.font;
+        state.frame = currentRecommendation.frame;
+        syncControlsFromState();
+        renderSignboard();
+        pushHistory();
+        showToast(`'${currentRecommendation.tag}' 추천 디자인이 적용되었습니다!`);
+      });
+
+      // Blank Reset
+      dom.btnResetBlank.addEventListener('click', () => {
+        state.id = null;
+        state.badge = '안내 / NOTICE';
+        state.title = '안내 제목을 입력하세요';
+        state.subtitle = '보조 설명 문구를 입력하세요.';
+        state.showInfoCard = false;
+        state.bullets = ['세부 안내 사항 1'];
+        syncControlsFromState();
+        renderSignboard();
+        renderVaultList();
+        pushHistory();
+        showToast('빈 양식으로 초기화되었습니다.');
+      });
+
+      // Preset Buttons
+      document.querySelectorAll('.preset-btn').forEach(btn => {
+        btn.addEventListener('click', () => {
+          const key = btn.getAttribute('data-preset');
+          const p = PRESETS[key];
+          if (!p) return;
+          state.id = null; // New draft from preset
+          Object.assign(state, DEFAULT_TYPO, JSON.parse(JSON.stringify(p)));
+          syncControlsFromState();
+          syncInputsToState();
+          renderVaultList();
+          pushHistory();
+          showToast(`'${p.title.replace(/\n/g, ' ')}' 양식이 적용되었습니다.`);
+        });
+      });
+
+      // Content Text Inputs
+      const contentInputs = [
+        dom.inputBadge, dom.inputTitle, dom.inputSubtitle,
+        dom.toggleInfoCard, dom.inputInfoLabel1, dom.inputInfoVal1,
+        dom.inputInfoLabel2, dom.inputInfoVal2, dom.inputInfoLabel3, dom.inputInfoVal3,
+        dom.selectBulletStyle, dom.inputFooterOrg, dom.inputFooterContact,
+        dom.toggleShowDate, dom.inputCustomDate, dom.inputStampText,
+        dom.toggleQr, dom.inputQrText, dom.inputQrLabel
+      ];
+      contentInputs.forEach(el => {
+        el.addEventListener('input', syncInputsToState);
+        el.addEventListener('change', () => {
+          syncInputsToState();
+          pushHistory();
+        });
+      });
+
+      // Add Bullet
+      dom.btnAddBullet.addEventListener('click', () => {
+        state.bullets.push('새로운 안내 사항을 입력하세요');
+        renderBulletInputs();
+        renderSignboard();
+        pushHistory();
+      });
+
+      // Typography Sliders
+      const sliderBindings = [
+        [dom.rangeTitleSize, 'titleSize', dom.valTitleSize, 'px', parseInt],
+        [dom.rangeSubtitleSize, 'subtitleSize', dom.valSubtitleSize, 'px', parseInt],
+        [dom.rangeInfoSize, 'infoSize', dom.valInfoSize, 'px', parseInt],
+        [dom.rangeBulletSize, 'bulletSize', dom.valBulletSize, 'px', parseInt],
+        [dom.rangeBadgeSize, 'badgeSize', dom.valBadgeSize, 'px', parseInt],
+        [dom.rangeFooterSize, 'footerSize', dom.valFooterSize, 'px', parseInt],
+        [dom.rangeLineHeight, 'titleLineHeight', dom.valLineHeight, '', parseFloat],
+        [dom.rangeLetterSpacing, 'titleLetterSpacing', dom.valLetterSpacing, 'em', parseFloat],
+        [dom.rangeBulletGap, 'bulletGap', dom.valBulletGap, 'px', parseInt],
+        [dom.rangeCanvasPadding, 'canvasPadding', dom.valCanvasPadding, 'px', parseInt]
+      ];
+      sliderBindings.forEach(([inputEl, key, labelEl, unit, parser]) => {
+        inputEl.addEventListener('input', (e) => {
+          state[key] = parser(e.target.value);
+          labelEl.textContent = `${state[key]}${unit}`;
+          renderSignboard();
+        });
+        inputEl.addEventListener('change', () => pushHistory());
+      });
+
+      // Global Font Scale Preset Buttons (85%, 100%, 115%, 130%)
+      document.querySelectorAll('.scale-preset-btn').forEach(btn => {
+        btn.addEventListener('click', () => {
+          const scale = parseFloat(btn.getAttribute('data-scale'));
+          state.titleSize = Math.round(DEFAULT_TYPO.titleSize * scale);
+          state.subtitleSize = Math.round(DEFAULT_TYPO.subtitleSize * scale);
+          state.infoSize = Math.round(DEFAULT_TYPO.infoSize * scale);
+          state.bulletSize = Math.round(DEFAULT_TYPO.bulletSize * scale);
+          state.badgeSize = Math.round(DEFAULT_TYPO.badgeSize * scale);
+          state.footerSize = Math.round(DEFAULT_TYPO.footerSize * scale);
+
+          document.querySelectorAll('.scale-preset-btn').forEach(b => {
+            b.className = 'scale-preset-btn py-1.5 text-xs font-semibold rounded-lg border border-slate-300 bg-white hover:bg-slate-100 transition';
+          });
+          btn.className = 'scale-preset-btn py-1.5 text-xs font-bold rounded-lg border border-amber-500 bg-amber-50 text-amber-900 transition';
+
+          syncControlsFromState();
+          renderSignboard();
+          pushHistory();
+          showToast(`전체 글자 크기가 ${Math.round(scale * 100)}% 배율로 조정되었습니다.`);
+        });
+      });
+
+      // Reset Typography
+      dom.btnResetTypography.addEventListener('click', () => {
+        Object.assign(state, DEFAULT_TYPO);
+        syncControlsFromState();
+        renderSignboard();
+        pushHistory();
+        showToast('글자 크기와 여백이 기본값으로 초기화되었습니다.');
+      });
+
+      // Theme & Font & Align & Frame & Icon Size
+      document.querySelectorAll('.theme-choice-btn').forEach(btn => {
+        btn.addEventListener('click', () => {
+          state.theme = btn.getAttribute('data-theme');
+          renderSignboard();
+          pushHistory();
+        });
+      });
+      dom.selectFont.addEventListener('change', (e) => {
+        state.font = e.target.value;
+        renderSignboard();
+        pushHistory();
+      });
+      dom.selectAlign.addEventListener('change', (e) => {
+        state.align = e.target.value;
+        renderSignboard();
+        pushHistory();
+      });
+      dom.selectFrame.addEventListener('change', (e) => {
+        state.frame = e.target.value;
+        renderSignboard();
+        pushHistory();
+      });
+      dom.rangeIconSize.addEventListener('input', (e) => {
+        state.iconSize = parseInt(e.target.value, 10);
+        dom.labelIconSize.textContent = state.iconSize === 0 ? '아이콘 숨김 (0px)' : `크기: ${state.iconSize}px`;
+        renderSignboard();
+      });
+      dom.rangeIconSize.addEventListener('change', () => pushHistory());
+
+      // Vault Actions
+      dom.btnHeaderSave.addEventListener('click', () => {
+        // If editing an existing record, overwrite it; otherwise save as new
+        saveSignToVault(!state.id);
+      });
+      dom.btnVaultUpdate.addEventListener('click', () => saveSignToVault(false));
+      dom.btnVaultSaveNew.addEventListener('click', () => saveSignToVault(true));
+      dom.inputVaultSearch.addEventListener('input', renderVaultList);
+      dom.selectVaultFilter.addEventListener('change', renderVaultList);
+
+      // JSON Export / Import
+      dom.btnExportJson.addEventListener('click', () => {
+        const blob = new Blob([JSON.stringify(vaultRecords, null, 2)], { type: 'application/json' });
+        const url = URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.href = url;
+        a.download = `A4_안내판_보관함백업_${nowDateStr.replace(/\.\s*/g, '-')}.json`;
+        a.click();
+        URL.revokeObjectURL(url);
+        showToast('보관함 전체 JSON 백업 파일이 다운로드되었습니다.');
+      });
+
+      dom.inputImportJson.addEventListener('change', (e) => {
+        const file = e.target.files?.[0];
+        if (!file) return;
+        const reader = new FileReader();
+        reader.onload = (ev) => {
+          try {
+            const imported = JSON.parse(ev.target.result);
+            if (Array.isArray(imported)) {
+              vaultRecords = imported;
+              saveLocalVault();
+              renderVaultList();
+              showToast(`${imported.length}개의 안내판 목록을 복원했습니다!`);
+            }
+          } catch (err) {
+            showToast('올바른 JSON 파일이 아닙니다.', '❌');
+          }
+        };
+        reader.readAsText(file);
+      });
+
+      // Print / PDF
+      dom.btnPrint.addEventListener('click', () => {
+        window.print();
+      });
+
+      // High-Res PNG Export (temporarily reset zoom transform for crisp 3x output)
+      dom.btnExportPng.addEventListener('click', () => {
+        showToast('고해상도 PNG 이미지를 생성하고 있습니다...', '⏳');
+        const prevTransform = dom.zoomStage.style.transform;
+        dom.zoomStage.style.transform = 'none';
+
+        html2canvas(dom.wrapper, {
+          scale: 3,
+          useCORS: true,
+          backgroundColor: null,
+          logging: false
+        }).then(canvas => {
+          dom.zoomStage.style.transform = prevTransform;
+          const link = document.createElement('a');
+          const safeTitle = (state.title || '안내판').replace(/[\r\n\/\\?%*:|"<>]/g, '_').slice(0, 24);
+          link.download = `A4_${state.orientation === 'landscape' ? '가로' : '세로'}_${safeTitle}.png`;
+          link.href = canvas.toDataURL('image/png');
+          link.click();
+          showToast('고해상도 PNG 파일 저장이 완료되었습니다!');
+        }).catch(err => {
+          dom.zoomStage.style.transform = prevTransform;
+          console.error(err);
+          showToast('이미지 저장 중 오류가 발생했습니다.', '❌');
+        });
+      });
+    }
+
+    // --- App Initialization ---
+    window.addEventListener('DOMContentLoaded', () => {
+      // Restore autosave if present
+      try {
+        const savedSnap = localStorage.getItem('a4_studio_autosave_v2');
+        if (savedSnap) {
+          Object.assign(state, DEFAULT_TYPO, JSON.parse(savedSnap));
+        }
+      } catch (e) {}
+
+      loadLocalVault();
+      syncControlsFromState();
+      initListeners();
+      syncInputsToState();
+      renderVaultList();
+      pushHistory();
+      fetchVaultFromCloud();
+    });
+  </script>
+</body>
+</html>

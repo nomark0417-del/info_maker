@@ -1,0 +1,18 @@
+{
+  "name": "a4-smart-signboard-studio",
+  "version": "1.0.0",
+  "private": true,
+  "type": "module",
+  "description": "A4 스마트 맞춤형 안내판 스튜디오 (행사·연수·협의회 안내판 제작 및 Cloudflare D1 보관함)",
+  "scripts": {
+    "test": "node tests/api.test.mjs",
+    "sync": "node -e \"const fs=require('fs'); fs.mkdirSync('public',{recursive:true}); fs.copyFileSync('a4.html','public/index.html'); fs.copyFileSync('a4.html','public/a4.html'); console.log('Synced a4.html -> public/index.html');\"",
+    "db:init:local": "npx wrangler d1 execute a4-signboard-db --local --file=./schema.sql",
+    "db:init:remote": "npx wrangler d1 execute a4-signboard-db --remote --file=./schema.sql",
+    "dev": "npm run sync && npx wrangler pages dev public --d1 DB=a4-signboard-db --port 8788",
+    "deploy": "npm run sync && npx wrangler pages deploy public --project-name a4-signboard-studio"
+  },
+  "devDependencies": {
+    "wrangler": "^3.99.0"
+  }
+}
