@@ -2,7 +2,9 @@ name: Deploy to Cloudflare Pages
 
 on:
   push:
-    branches: [ "main" ]
+    branches:
+      - main
+      - master
   workflow_dispatch:
 
 jobs:
@@ -19,15 +21,29 @@ jobs:
           node-version: 20
 
       - name: Install dependencies
-        run: npm install
+        run: npm install --legacy-peer-deps
 
       - name: Build project
         run: npm run build
 
+      - name: Verify build output directory
+        run: |
+          if [ -d "out" ]; then
+            echo "DEPLOY_DIR=out" >> $GITHUB_ENV
+          elif [ -d "dist" ]; then
+            echo "DEPLOY_DIR=dist" >> $GITHUB_ENV
+          elif [ -d ".next" ]; then
+            echo "DEPLOY_DIR=.next" >> $GITHUB_ENV
+          else
+            echo "❌ Build output directory not found!"
+            ls -la
+            exit 1
+          fi
+
       - name: Deploy to Cloudflare Pages
-        if: ${{ secrets.CLOUDFLARE_API_TOKEN != '' }}
         uses: cloudflare/wrangler-action@v3
         with:
           apiToken: ${{ secrets.CLOUDFLARE_API_TOKEN }}
-          accountId: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
-          command: pages deploy public --project-name info-maker
+          accountId: ${{ secrets.CLOUDFLARE_ACCOUNT_ID || secrets.CLOUDFLARE_account_id }}
+          projectName: info_maker
+          directory: ${{ env.DEPLOY_DIR }}
