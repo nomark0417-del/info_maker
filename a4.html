@@ -551,12 +551,20 @@
         <!-- Icon Picker & Size -->
         <div>
           <div class="flex items-center justify-between mb-1.5">
-            <label class="text-xs font-bold text-slate-800">상징 아이콘 & 방향 화살표 선택 (24종)</label>
-            <span id="label-icon-size" class="text-[11px] font-semibold text-amber-700">크기: 보통 (64px)</span>
+            <div class="flex items-center gap-2">
+              <label class="text-xs font-bold text-slate-800">상징 아이콘 선택</label>
+              <label class="flex items-center gap-1 text-[11px] text-slate-600 cursor-pointer bg-slate-100 hover:bg-slate-200 px-2 py-0.5 rounded transition">
+                <input type="checkbox" id="toggle-hide-icon" class="rounded text-amber-600 w-3.5 h-3.5">
+                <span class="font-semibold">아이콘 사용 안 함</span>
+              </label>
+            </div>
+            <span id="label-icon-size" class="text-[11px] font-semibold text-amber-700">크기: 64px</span>
           </div>
-          <input type="range" id="range-icon-size" min="0" max="120" step="8" value="64" class="w-full accent-amber-600 cursor-pointer mb-2.5">
-          <div class="grid grid-cols-8 gap-1.5" id="icon-selector-grid">
-            <!-- Populated via JS -->
+          <div id="icon-controls-wrapper" class="space-y-2">
+            <input type="range" id="range-icon-size" min="24" max="140" step="4" value="64" class="w-full accent-amber-600 cursor-pointer">
+            <div class="grid grid-cols-8 gap-1.5" id="icon-selector-grid">
+              <!-- Populated via JS -->
+            </div>
           </div>
         </div>
 
@@ -887,6 +895,7 @@
       showLogo: true,
       logoHeight: 28,
       theme: 'royal-blue',
+      showIcon: true,
       icon: 'graduation-cap',
       font: 'font-pretendard',
       align: 'text-center',
@@ -1386,6 +1395,8 @@
 
       // Design Controls
       selectFrame: document.getElementById('select-frame'),
+      toggleHideIcon: document.getElementById('toggle-hide-icon'),
+      iconControlsWrapper: document.getElementById('icon-controls-wrapper'),
       rangeIconSize: document.getElementById('range-icon-size'),
       labelIconSize: document.getElementById('label-icon-size'),
       iconGrid: document.getElementById('icon-selector-grid'),
@@ -1492,8 +1503,13 @@
       dom.rangeCanvasPadding.value = state.canvasPadding;
       dom.valCanvasPadding.textContent = `${state.canvasPadding}px`;
 
-      dom.rangeIconSize.value = state.iconSize;
-      dom.labelIconSize.textContent = state.iconSize === 0 ? '아이콘 숨김 (0px)' : `크기: ${state.iconSize}px`;
+      const iconDisabled = state.showIcon === false || state.iconSize === 0;
+      dom.toggleHideIcon.checked = iconDisabled;
+      dom.rangeIconSize.disabled = iconDisabled;
+      dom.iconControlsWrapper.style.opacity = iconDisabled ? '0.4' : '1';
+      dom.iconControlsWrapper.style.pointerEvents = iconDisabled ? 'none' : 'auto';
+      dom.rangeIconSize.value = state.iconSize || 64;
+      dom.labelIconSize.textContent = iconDisabled ? '사용 안 함' : `크기: ${state.iconSize}px`;
 
       dom.toggleQr.checked = !!state.showQr;
       dom.inputQrText.value = state.qrText || '';
@@ -1808,11 +1824,16 @@
       }
 
       // 2) Icon
-      if (!state.iconSize || state.iconSize <= 0 || !ICONS[state.icon]) {
+      const hasIcon = state.showIcon !== false && state.iconSize > 0 && !!ICONS[state.icon];
+      if (!hasIcon) {
         dom.iconContainer.style.display = 'none';
+        dom.badgeContainer.classList.remove('mb-4');
+        dom.badgeContainer.classList.add('mb-6');
       } else {
         dom.iconContainer.style.display = 'flex';
         dom.iconContainer.innerHTML = `<div style="width:${state.iconSize}px;height:${state.iconSize}px;color:${palette.accent}" class="transition-all">${ICONS[state.icon]}</div>`;
+        dom.badgeContainer.classList.remove('mb-6');
+        dom.badgeContainer.classList.add('mb-4');
       }
 
       // 3) Main Title
@@ -2452,10 +2473,22 @@
       });
       dom.rangeIconSize.addEventListener('input', (e) => {
         state.iconSize = parseInt(e.target.value, 10);
-        dom.labelIconSize.textContent = state.iconSize === 0 ? '아이콘 숨김 (0px)' : `크기: ${state.iconSize}px`;
+        dom.labelIconSize.textContent = `크기: ${state.iconSize}px`;
         renderSignboard();
       });
       dom.rangeIconSize.addEventListener('change', () => pushHistory());
+
+      // Toggle Hide Icon
+      dom.toggleHideIcon.addEventListener('change', (e) => {
+        state.showIcon = !e.target.checked;
+        if (state.showIcon && (!state.iconSize || state.iconSize === 0)) {
+          state.iconSize = 64;
+        }
+        syncControlsFromState();
+        renderSignboard();
+        pushHistory();
+        showToast(state.showIcon ? '아이콘이 표시됩니다.' : '아이콘이 제거되고 레이아웃이 최적화되었습니다.');
+      });
 
       // Slogan & Logo Slider Listeners
       if (dom.quickRangeBadgeSize) {
