@@ -29,5 +29,4 @@ jobs:
         with:
           apiToken: ${{ secrets.CLOUDFLARE_API_TOKEN }}
           accountId: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
-          projectName: info_maker
-          directory: out
+          command: pages deploy public --project-name info-maker
