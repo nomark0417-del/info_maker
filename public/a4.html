@@ -15,6 +15,8 @@
   <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
   <!-- QRious for lightweight Canvas QR Code generation -->
   <script src="https://cdnjs.cloudflare.com/ajax/libs/qrious/4.0.2/qrious.min.js"></script>
+  <!-- Embedded Official Assets (Slogan & Logo) -->
+  <script src="assets/images_data.js"></script>
   <script>
     tailwind.config = {
       theme: {
@@ -566,6 +568,48 @@
 
         <hr class="border-slate-200">
 
+        <!-- Official Ulsan Edu Branding Option -->
+        <div class="p-3 rounded-xl bg-blue-50/90 border border-blue-200 space-y-2.5">
+          <div class="flex items-center justify-between">
+            <span class="text-xs font-bold text-blue-950 flex items-center gap-1.5">
+              <span>🏛️</span><span>울산광역시교육청 공식 슬로건 & 로고</span>
+            </span>
+            <span class="text-[10px] font-bold px-2 py-0.5 rounded-full bg-blue-200/70 text-blue-900">공식 서식</span>
+          </div>
+          
+          <div class="grid grid-cols-2 gap-2 text-xs">
+            <label class="flex items-center gap-2 p-2 bg-white rounded-lg border border-blue-200 cursor-pointer hover:bg-blue-50/50 transition">
+              <input type="checkbox" id="toggle-slogan" checked class="rounded text-blue-600 w-4 h-4">
+              <div>
+                <span class="font-bold text-slate-800 block text-[11px]">상단 슬로건</span>
+                <span class="text-[10px] text-slate-500">오늘이 행복한 울산교육</span>
+              </div>
+            </label>
+            <label class="flex items-center gap-2 p-2 bg-white rounded-lg border border-blue-200 cursor-pointer hover:bg-blue-50/50 transition">
+              <input type="checkbox" id="toggle-logo" checked class="rounded text-blue-600 w-4 h-4">
+              <div>
+                <span class="font-bold text-slate-800 block text-[11px]">하단 기관 로고</span>
+                <span class="text-[10px] text-slate-500">울산광역시교육청 CI</span>
+              </div>
+            </label>
+          </div>
+
+          <div class="flex items-center justify-between pt-1 text-[11px] text-blue-900">
+            <span>슬로건 크기(너비)</span>
+            <div class="flex items-center gap-2 w-36">
+              <input type="range" id="range-slogan-width" min="140" max="360" step="10" value="240" class="w-full accent-blue-600">
+              <span id="val-slogan-width" class="font-mono text-[10px] w-10 text-right">240px</span>
+            </div>
+          </div>
+          <div class="flex items-center justify-between text-[11px] text-blue-900">
+            <span>로고 크기(높이)</span>
+            <div class="flex items-center gap-2 w-36">
+              <input type="range" id="range-logo-height" min="18" max="44" step="2" value="28" class="w-full accent-blue-600">
+              <span id="val-logo-height" class="font-mono text-[10px] w-10 text-right">28px</span>
+            </div>
+          </div>
+        </div>
+
         <!-- Optional QR Code Generator -->
         <div class="p-3 rounded-xl bg-slate-50 border border-slate-200 space-y-2">
           <label for="toggle-qr" class="text-xs font-bold text-slate-800 flex items-center gap-1.5 cursor-pointer">
@@ -681,8 +725,13 @@
             <!-- Decorative Frame Overlay -->
             <div id="frame-overlay" class="absolute inset-4 pointer-events-none transition-all"></div>
 
-            <!-- Top Section: Badge & Icon -->
+            <!-- Top Section: Slogan, Badge & Icon -->
             <div id="sign-header" class="relative z-10 flex flex-col items-center text-center">
+              <!-- Top Slogan Image (오늘이 행복한 울산교육) -->
+              <div id="sign-slogan-container" class="mb-3 transition-all flex justify-center">
+                <img id="sign-slogan-img" src="" alt="오늘이 행복한 울산교육" class="max-w-full object-contain">
+              </div>
+
               <div id="sign-badge-container" class="mb-4">
                 <span id="sign-badge" class="inline-block uppercase tracking-widest font-black px-4 py-1.5 rounded-full border">
                   2026 직무연수 안내
@@ -721,7 +770,11 @@
 
             <!-- Bottom Section: Footer Info, Stamp, Date & Optional QR -->
             <div id="sign-footer" class="relative z-10 pt-4 mt-3 border-t border-slate-300/80 flex items-end justify-between gap-4">
-              <div class="space-y-1 text-left">
+              <div class="space-y-1.5 text-left">
+                <!-- Bottom Logo Image (울산광역시교육청) -->
+                <div id="sign-logo-container" class="mb-1 transition-all">
+                  <img id="sign-logo-img" src="" alt="울산광역시교육청" class="object-contain">
+                </div>
                 <div id="sign-footer-left" class="flex flex-wrap items-center gap-2">
                   <span id="sign-footer-org" class="font-bold">교육연수운영부</span>
                   <span id="sign-footer-divider" class="opacity-40">|</span>
@@ -813,6 +866,10 @@
       showQr: false,
       qrText: 'https://example.com/guide',
       qrLabel: '연수 자료집 QR',
+      showSlogan: true,
+      sloganWidth: 240,
+      showLogo: true,
+      logoHeight: 28,
       theme: 'royal-blue',
       icon: 'graduation-cap',
       font: 'font-pretendard',
@@ -1240,6 +1297,10 @@
       footerContact: document.getElementById('sign-footer-contact'),
       footerRight: document.getElementById('sign-footer-right'),
       dateDisplay: document.getElementById('sign-date-display'),
+      sloganContainer: document.getElementById('sign-slogan-container'),
+      sloganImg: document.getElementById('sign-slogan-img'),
+      logoContainer: document.getElementById('sign-logo-container'),
+      logoImg: document.getElementById('sign-logo-img'),
       stampBox: document.getElementById('sign-stamp-box'),
       qrBox: document.getElementById('sign-qr-box'),
       qrCanvas: document.getElementById('sign-qr-canvas'),
@@ -1313,6 +1374,12 @@
       toggleQr: document.getElementById('toggle-qr'),
       inputQrText: document.getElementById('input-qr-text'),
       inputQrLabel: document.getElementById('input-qr-label'),
+      toggleSlogan: document.getElementById('toggle-slogan'),
+      rangeSloganWidth: document.getElementById('range-slogan-width'),
+      valSloganWidth: document.getElementById('val-slogan-width'),
+      toggleLogo: document.getElementById('toggle-logo'),
+      rangeLogoHeight: document.getElementById('range-logo-height'),
+      valLogoHeight: document.getElementById('val-logo-height'),
 
       // AI Box
       aiDetectedTag: document.getElementById('ai-detected-tag'),
@@ -1409,6 +1476,13 @@
       dom.toggleQr.checked = !!state.showQr;
       dom.inputQrText.value = state.qrText || '';
       dom.inputQrLabel.value = state.qrLabel || '';
+
+      dom.toggleSlogan.checked = state.showSlogan !== false;
+      dom.rangeSloganWidth.value = state.sloganWidth || 240;
+      dom.valSloganWidth.textContent = `${state.sloganWidth || 240}px`;
+      dom.toggleLogo.checked = state.showLogo !== false;
+      dom.rangeLogoHeight.value = state.logoHeight || 28;
+      dom.valLogoHeight.textContent = `${state.logoHeight || 28}px`;
 
       dom.selectSaveCategory.value = state.category || '연수안내';
       dom.inputSaveMemo.value = state.memo || '';
@@ -1686,6 +1760,15 @@
       w.style.backgroundColor = palette.bg;
       w.style.color = palette.text;
 
+      // 0) Top Slogan Image (오늘이 행복한 울산교육)
+      if (state.showSlogan !== false && typeof ASSET_SLOGAN !== 'undefined') {
+        dom.sloganContainer.style.display = 'flex';
+        dom.sloganImg.src = ASSET_SLOGAN;
+        dom.sloganImg.style.width = `${state.sloganWidth || 240}px`;
+      } else {
+        dom.sloganContainer.style.display = 'none';
+      }
+
       // 1) Badge
       if (state.badge && state.badge.trim()) {
         dom.badgeContainer.style.display = 'block';
@@ -1789,6 +1872,14 @@
       }
 
       // 7) Footer & Date & Stamp & QR
+      if (state.showLogo !== false && typeof ASSET_LOGO !== 'undefined') {
+        dom.logoContainer.style.display = 'block';
+        dom.logoImg.src = ASSET_LOGO;
+        dom.logoImg.style.height = `${state.logoHeight || 28}px`;
+      } else {
+        dom.logoContainer.style.display = 'none';
+      }
+
       dom.footerOrg.textContent = state.footerOrg || '';
       dom.footerContact.textContent = state.footerContact || '';
       dom.footerDivider.style.display = (state.footerOrg && state.footerContact) ? 'inline' : 'none';
@@ -2234,7 +2325,8 @@
         dom.inputInfoLabel2, dom.inputInfoVal2, dom.inputInfoLabel3, dom.inputInfoVal3,
         dom.selectBulletStyle, dom.inputFooterOrg, dom.inputFooterContact,
         dom.toggleShowDate, dom.inputCustomDate, dom.inputStampText,
-        dom.toggleQr, dom.inputQrText, dom.inputQrLabel
+        dom.toggleQr, dom.inputQrText, dom.inputQrLabel,
+        dom.toggleSlogan, dom.toggleLogo
       ];
       contentInputs.forEach(el => {
         el.addEventListener('input', syncInputsToState);
@@ -2335,6 +2427,21 @@
         renderSignboard();
       });
       dom.rangeIconSize.addEventListener('change', () => pushHistory());
+
+      // Slogan & Logo Slider Listeners
+      dom.rangeSloganWidth.addEventListener('input', (e) => {
+        state.sloganWidth = parseInt(e.target.value, 10);
+        dom.valSloganWidth.textContent = `${state.sloganWidth}px`;
+        renderSignboard();
+      });
+      dom.rangeSloganWidth.addEventListener('change', () => pushHistory());
+
+      dom.rangeLogoHeight.addEventListener('input', (e) => {
+        state.logoHeight = parseInt(e.target.value, 10);
+        dom.valLogoHeight.textContent = `${state.logoHeight}px`;
+        renderSignboard();
+      });
+      dom.rangeLogoHeight.addEventListener('change', () => pushHistory());
 
       // Vault Actions
       dom.btnHeaderSave.addEventListener('click', () => {

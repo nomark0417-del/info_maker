@@ -18,3 +18,4 @@
    - **Build command**: `npm run sync`
    - **Build output directory**: `public`
 4. 저장 후부터는 [`a4.html`](./a4.html)을 수정하고 `git push`하면 자동으로 사이트에 즉시 반영됩니다.
+
