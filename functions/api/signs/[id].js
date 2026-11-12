@@ -1,29 +1,14 @@
 /**
  * Cloudflare Pages Functions — /api/signs/[id]
- * Handles retrieving (GET), updating/overwriting (PUT), and deleting (DELETE) a signboard in Cloudflare D1.
+ * Handles retrieving (GET), updating/overwriting (PUT), and deleting (DELETE) a user-owned signboard in Cloudflare D1.
  */
 
-const CORS_HEADERS = {
-  'Content-Type': 'application/json; charset=utf-8',
-  'Access-Control-Allow-Origin': '*',
-  'Access-Control-Allow-Methods': 'GET, POST, PUT, DELETE, OPTIONS',
-  'Access-Control-Allow-Headers': 'Content-Type'
-};
-
-async function ensureSchema(db) {
-  await db.prepare(`
-    CREATE TABLE IF NOT EXISTS signs (
-      id TEXT PRIMARY KEY,
-      title TEXT NOT NULL,
-      category TEXT NOT NULL DEFAULT '연수안내',
-      memo TEXT NOT NULL DEFAULT '',
-      orientation TEXT NOT NULL DEFAULT 'portrait',
-      state_json TEXT NOT NULL,
-      created_at TEXT NOT NULL DEFAULT (strftime('%Y-%m-%dT%H:%M:%fZ', 'now')),
-      updated_at TEXT NOT NULL DEFAULT (strftime('%Y-%m-%dT%H:%M:%fZ', 'now'))
-    )
-  `).run();
-}
+import {
+  CORS_HEADERS,
+  ensureSchema,
+  getSessionUser,
+  jsonResponse
+} from '../../lib/db-auth.js';
 
 export async function onRequestOptions() {
   return new Response(null, { status: 204, headers: CORS_HEADERS });
@@ -33,35 +18,28 @@ export async function onRequestGet(context) {
   const db = context.env.DB;
   const id = context.params.id;
   if (!db) {
-    return new Response(
-      JSON.stringify({ error: 'D1 database binding (DB) is not configured.' }),
-      { status: 503, headers: CORS_HEADERS }
-    );
+    return jsonResponse({ error: 'D1 database binding (DB) is not configured.' }, 503);
   }
 
   try {
     await ensureSchema(db);
+    const user = await getSessionUser(context.request, db);
+    if (!user) {
+      return jsonResponse({ ok: false, error: '로그인이 필요합니다.' }, 401);
+    }
+
     const item = await db
-      .prepare(`SELECT id, title, category, memo, orientation, state_json, created_at, updated_at FROM signs WHERE id = ?`)
-      .bind(id)
+      .prepare(`SELECT id, user_id, title, category, memo, orientation, state_json, created_at, updated_at FROM signs WHERE id = ? AND user_id = ?`)
+      .bind(id, user.id)
       .first();
 
     if (!item) {
-      return new Response(
-        JSON.stringify({ ok: false, error: '안내판을 찾을 수 없습니다.' }),
-        { status: 404, headers: CORS_HEADERS }
-      );
+      return jsonResponse({ ok: false, error: '안내판을 찾을 수 없습니다.' }, 404);
     }
 
-    return new Response(
-      JSON.stringify({ ok: true, item }),
-      { status: 200, headers: CORS_HEADERS }
-    );
+    return jsonResponse({ ok: true, item });
   } catch (err) {
-    return new Response(
-      JSON.stringify({ ok: false, error: err.message }),
-      { status: 500, headers: CORS_HEADERS }
-    );
+    return jsonResponse({ ok: false, error: err.message }, 500);
   }
 }
 
@@ -69,24 +47,28 @@ export async function onRequestPut(context) {
   const db = context.env.DB;
   const id = context.params.id;
   if (!db) {
-    return new Response(
-      JSON.stringify({ error: 'D1 database binding (DB) is not configured.' }),
-      { status: 503, headers: CORS_HEADERS }
-    );
+    return jsonResponse({ error: 'D1 database binding (DB) is not configured.' }, 503);
   }
 
   let body;
   try {
     body = await context.request.json();
   } catch {
-    return new Response(
-      JSON.stringify({ ok: false, error: '올바른 JSON 요청 본문이 아닙니다.' }),
-      { status: 400, headers: CORS_HEADERS }
-    );
+    return jsonResponse({ ok: false, error: '올바른 JSON 요청 본문이 아닙니다.' }, 400);
   }
 
   try {
     await ensureSchema(db);
+    const user = await getSessionUser(context.request, db);
+    if (!user) {
+      return jsonResponse({ ok: false, error: '로그인이 필요합니다.' }, 401);
+    }
+
+    const existingOwner = await db.prepare(`SELECT user_id FROM signs WHERE id = ?`).bind(id).first();
+    if (existingOwner && existingOwner.user_id !== user.id) {
+      return jsonResponse({ ok: false, error: '다른 사용자의 안내판은 수정할 수 없습니다.' }, 403);
+    }
+
     const now = new Date().toISOString();
     const title = (body.title && String(body.title).trim()) || '제목 없는 안내판';
     const category = (body.category && String(body.category).trim()) || '연수안내';
@@ -96,10 +78,9 @@ export async function onRequestPut(context) {
       ? body.state_json
       : JSON.stringify(body.state_json || {});
 
-    // Upsert on PUT so overwriting a sample or locally-created record persists cleanly to D1
     await db.prepare(`
-      INSERT INTO signs (id, title, category, memo, orientation, state_json, created_at, updated_at)
-      VALUES (?, ?, ?, ?, ?, ?, ?, ?)
+      INSERT INTO signs (id, user_id, title, category, memo, orientation, state_json, created_at, updated_at)
+      VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)
       ON CONFLICT(id) DO UPDATE SET
         title = excluded.title,
         category = excluded.category,
@@ -107,20 +88,14 @@ export async function onRequestPut(context) {
         orientation = excluded.orientation,
         state_json = excluded.state_json,
         updated_at = excluded.updated_at
-    `).bind(id, title, category, memo, orientation, stateJson, now, now).run();
+    `).bind(id, user.id, title, category, memo, orientation, stateJson, now, now).run();
 
-    return new Response(
-      JSON.stringify({
-        ok: true,
-        item: { id, title, category, memo, orientation, state_json: stateJson, updated_at: now }
-      }),
-      { status: 200, headers: CORS_HEADERS }
-    );
+    return jsonResponse({
+      ok: true,
+      item: { id, user_id: user.id, title, category, memo, orientation, state_json: stateJson, updated_at: now }
+    });
   } catch (err) {
-    return new Response(
-      JSON.stringify({ ok: false, error: err.message }),
-      { status: 500, headers: CORS_HEADERS }
-    );
+    return jsonResponse({ ok: false, error: err.message }, 500);
   }
 }
 
@@ -128,23 +103,19 @@ export async function onRequestDelete(context) {
   const db = context.env.DB;
   const id = context.params.id;
   if (!db) {
-    return new Response(
-      JSON.stringify({ error: 'D1 database binding (DB) is not configured.' }),
-      { status: 503, headers: CORS_HEADERS }
-    );
+    return jsonResponse({ error: 'D1 database binding (DB) is not configured.' }, 503);
   }
 
   try {
     await ensureSchema(db);
-    await db.prepare(`DELETE FROM signs WHERE id = ?`).bind(id).run();
-    return new Response(
-      JSON.stringify({ ok: true, deletedId: id }),
-      { status: 200, headers: CORS_HEADERS }
-    );
+    const user = await getSessionUser(context.request, db);
+    if (!user) {
+      return jsonResponse({ ok: false, error: '로그인이 필요합니다.' }, 401);
+    }
+
+    await db.prepare(`DELETE FROM signs WHERE id = ? AND user_id = ?`).bind(id, user.id).run();
+    return jsonResponse({ ok: true, deletedId: id });
   } catch (err) {
-    return new Response(
-      JSON.stringify({ ok: false, error: err.message }),
-      { status: 500, headers: CORS_HEADERS }
-    );
+    return jsonResponse({ ok: false, error: err.message }, 500);
   }
 }

@@ -1,29 +1,14 @@
 /**
  * Cloudflare Pages Functions — /api/signs
- * Handles listing all saved signboards (GET) and saving a new signboard (POST) in Cloudflare D1.
+ * Handles listing and creating per-user signboards in Cloudflare D1.
  */
 
-const CORS_HEADERS = {
-  'Content-Type': 'application/json; charset=utf-8',
-  'Access-Control-Allow-Origin': '*',
-  'Access-Control-Allow-Methods': 'GET, POST, PUT, DELETE, OPTIONS',
-  'Access-Control-Allow-Headers': 'Content-Type'
-};
-
-async function ensureSchema(db) {
-  await db.prepare(`
-    CREATE TABLE IF NOT EXISTS signs (
-      id TEXT PRIMARY KEY,
-      title TEXT NOT NULL,
-      category TEXT NOT NULL DEFAULT '연수안내',
-      memo TEXT NOT NULL DEFAULT '',
-      orientation TEXT NOT NULL DEFAULT 'portrait',
-      state_json TEXT NOT NULL,
-      created_at TEXT NOT NULL DEFAULT (strftime('%Y-%m-%dT%H:%M:%fZ', 'now')),
-      updated_at TEXT NOT NULL DEFAULT (strftime('%Y-%m-%dT%H:%M:%fZ', 'now'))
-    )
-  `).run();
-}
+import {
+  CORS_HEADERS,
+  ensureSchema,
+  getSessionUser,
+  jsonResponse
+} from '../../lib/db-auth.js';
 
 export async function onRequestOptions() {
   return new Response(null, { status: 204, headers: CORS_HEADERS });
@@ -32,74 +17,67 @@ export async function onRequestOptions() {
 export async function onRequestGet(context) {
   const db = context.env.DB;
   if (!db) {
-    return new Response(
-      JSON.stringify({ error: 'D1 database binding (DB) is not configured.' }),
-      { status: 503, headers: CORS_HEADERS }
-    );
+    return jsonResponse({ error: 'D1 database binding (DB) is not configured.' }, 503);
   }
 
   try {
     await ensureSchema(db);
+    const user = await getSessionUser(context.request, db);
+    if (!user) {
+      return jsonResponse({ ok: false, error: '개인 보관함을 조회하려면 로그인이 필요합니다.' }, 401);
+    }
 
     const url = new URL(context.request.url);
     const category = url.searchParams.get('category');
     const q = url.searchParams.get('q');
 
-    let query = `SELECT id, title, category, memo, orientation, state_json, created_at, updated_at FROM signs`;
-    const conditions = [];
-    const params = [];
+    let query = `SELECT id, user_id, title, category, memo, orientation, state_json, created_at, updated_at FROM signs WHERE user_id = ?`;
+    const params = [user.id];
 
     if (category && category !== 'ALL') {
-      conditions.push(`category = ?`);
+      query += ` AND category = ?`;
       params.push(category);
     }
     if (q && q.trim()) {
-      conditions.push(`(title LIKE ? OR memo LIKE ?)`);
+      query += ` AND (title LIKE ? OR memo LIKE ?)`;
       params.push(`%${q.trim()}%`, `%${q.trim()}%`);
-    }
-    if (conditions.length > 0) {
-      query += ` WHERE ` + conditions.join(' AND ');
     }
     query += ` ORDER BY updated_at DESC LIMIT 200`;
 
-    const stmt = db.prepare(query);
-    const { results } = params.length > 0 ? await stmt.bind(...params).all() : await stmt.all();
-
-    return new Response(
-      JSON.stringify({ ok: true, items: results || [] }),
-      { status: 200, headers: CORS_HEADERS }
-    );
+    const { results } = await db.prepare(query).bind(...params).all();
+    return jsonResponse({ ok: true, items: results || [] });
   } catch (err) {
-    return new Response(
-      JSON.stringify({ ok: false, error: err.message }),
-      { status: 500, headers: CORS_HEADERS }
-    );
+    return jsonResponse({ ok: false, error: err.message }, 500);
   }
 }
 
 export async function onRequestPost(context) {
   const db = context.env.DB;
   if (!db) {
-    return new Response(
-      JSON.stringify({ error: 'D1 database binding (DB) is not configured.' }),
-      { status: 503, headers: CORS_HEADERS }
-    );
+    return jsonResponse({ error: 'D1 database binding (DB) is not configured.' }, 503);
   }
 
   let body;
   try {
     body = await context.request.json();
   } catch {
-    return new Response(
-      JSON.stringify({ ok: false, error: "올바른 JSON 요청 본문이 아닙니다." }),
-      { status: 400, headers: CORS_HEADERS }
-    );
+    return jsonResponse({ ok: false, error: '올바른 JSON 요청 본문이 아닙니다.' }, 400);
   }
 
   try {
     await ensureSchema(db);
+    const user = await getSessionUser(context.request, db);
+    if (!user) {
+      return jsonResponse({ ok: false, error: '개인 보관함에 저장하려면 로그인이 필요합니다.' }, 401);
+    }
+
     const now = new Date().toISOString();
     const id = (body.id && String(body.id).trim()) || `sign_${Date.now()}_${Math.random().toString(36).slice(2, 6)}`;
+    const existingOwner = await db.prepare(`SELECT user_id FROM signs WHERE id = ?`).bind(id).first();
+    if (existingOwner && existingOwner.user_id !== user.id) {
+      return jsonResponse({ ok: false, error: '다른 사용자의 안내판 ID는 덮어쓸 수 없습니다.' }, 403);
+    }
+
     const title = (body.title && String(body.title).trim()) || '제목 없는 안내판';
     const category = (body.category && String(body.category).trim()) || '연수안내';
     const memo = body.memo ? String(body.memo).trim() : '';
@@ -109,8 +87,8 @@ export async function onRequestPost(context) {
       : JSON.stringify(body.state_json || {});
 
     await db.prepare(`
-      INSERT INTO signs (id, title, category, memo, orientation, state_json, created_at, updated_at)
-      VALUES (?, ?, ?, ?, ?, ?, ?, ?)
+      INSERT INTO signs (id, user_id, title, category, memo, orientation, state_json, created_at, updated_at)
+      VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)
       ON CONFLICT(id) DO UPDATE SET
         title = excluded.title,
         category = excluded.category,
@@ -118,19 +96,16 @@ export async function onRequestPost(context) {
         orientation = excluded.orientation,
         state_json = excluded.state_json,
         updated_at = excluded.updated_at
-    `).bind(id, title, category, memo, orientation, stateJson, now, now).run();
+    `).bind(id, user.id, title, category, memo, orientation, stateJson, now, now).run();
 
-    return new Response(
-      JSON.stringify({
+    return jsonResponse(
+      {
         ok: true,
-        item: { id, title, category, memo, orientation, state_json: stateJson, updated_at: now }
-      }),
-      { status: 201, headers: CORS_HEADERS }
+        item: { id, user_id: user.id, title, category, memo, orientation, state_json: stateJson, updated_at: now }
+      },
+      201
     );
   } catch (err) {
-    return new Response(
-      JSON.stringify({ ok: false, error: err.message }),
-      { status: 500, headers: CORS_HEADERS }
-    );
+    return jsonResponse({ ok: false, error: err.message }, 500);
   }
 }

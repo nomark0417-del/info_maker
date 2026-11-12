@@ -160,6 +160,19 @@
           </button>
         </div>
 
+        <!-- Auth Controls (Personal Account & Cloud Vault) -->
+        <div id="header-auth-logged-out" class="flex items-center">
+          <button type="button" id="btn-header-login" class="px-3 py-1.5 text-xs font-bold rounded-lg bg-slate-800 hover:bg-slate-700 text-amber-300 border border-amber-500/40 flex items-center gap-1.5 transition-colors">
+            <span>🔐</span>
+            <span>로그인 / 가입</span>
+          </button>
+        </div>
+        <div id="header-auth-logged-in" class="hidden items-center gap-1.5 bg-slate-800/90 border border-emerald-500/40 rounded-lg px-2.5 py-1">
+          <span class="w-2 h-2 rounded-full bg-emerald-400"></span>
+          <span id="header-user-name" class="text-xs font-bold text-emerald-200 max-w-[110px] truncate">사용자</span>
+          <button type="button" id="btn-header-logout" class="ml-1 px-1.5 py-0.5 text-[10px] font-semibold rounded bg-slate-700 hover:bg-rose-600 text-slate-200 hover:text-white transition-colors">로그아웃</button>
+        </div>
+
         <!-- Quick Save to Vault Button -->
         <button type="button" id="btn-header-save" class="px-3 py-1.5 text-xs font-bold rounded-lg bg-indigo-600 hover:bg-indigo-500 text-white shadow flex items-center gap-1.5 transition-colors">
           <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7H5a2 2 0 00-2 2v9a2 2 0 002 2h14a2 2 0 002-2V9a2 2 0 00-2-2h-3m-1 4l-3 3m0 0l-3-3m3 3V4"></path></svg>
@@ -652,6 +665,21 @@
 
       <!-- TAB 4: VAULT (SAVE / UPDATE / DUPLICATE / CLOUD DB) -->
       <div id="tab-panel-vault" class="tab-panel hidden p-4 sm:p-5 space-y-4">
+        <!-- Personal Account & Cloud Sync Banner -->
+        <div id="vault-auth-banner" class="p-3 rounded-xl border bg-amber-50/90 border-amber-200 flex items-center justify-between gap-2.5">
+          <div class="min-w-0">
+            <div id="vault-auth-title" class="text-xs font-bold text-amber-950 flex items-center gap-1.5">
+              <span>👤 게스트 모드 (이 브라우저 임시저장)</span>
+            </div>
+            <p id="vault-auth-desc" class="text-[11px] text-amber-800 mt-0.5 leading-snug">
+              다른 PC나 브라우저에서도 내 안내판을 불러오려면 로그인하세요.
+            </p>
+          </div>
+          <button type="button" id="btn-vault-auth-action" class="shrink-0 px-2.5 py-1.5 text-[11px] font-bold rounded-lg bg-amber-600 hover:bg-amber-700 text-white shadow-sm transition-colors">
+            로그인 / 가입
+          </button>
+        </div>
+
         <div class="p-3.5 rounded-xl bg-indigo-50/90 border border-indigo-200 space-y-2.5">
           <div class="flex items-center justify-between">
             <h3 class="text-xs font-bold text-indigo-950 flex items-center gap-1.5">
@@ -852,6 +880,61 @@
     </section>
 
   </main>
+
+  <!-- Authentication Modal (Login / Register for Per-User Cloud Vault) -->
+  <div id="auth-modal" class="no-print hidden fixed inset-0 z-50 flex items-center justify-center bg-slate-950/65 backdrop-blur-sm p-4" role="dialog" aria-modal="true" aria-labelledby="auth-modal-heading">
+    <div id="auth-modal-card" class="w-full max-w-sm bg-white rounded-2xl shadow-2xl border border-slate-200 overflow-hidden">
+      <div class="px-5 py-4 bg-slate-900 text-white flex items-center justify-between">
+        <div>
+          <h2 id="auth-modal-heading" class="text-sm font-bold flex items-center gap-1.5">
+            <span>🔐</span>
+            <span id="auth-modal-title">개인 보관함 로그인</span>
+          </h2>
+          <p class="text-[11px] text-slate-300 mt-0.5">계정별로 클라우드 보관함이 안전하게 분리 저장됩니다.</p>
+        </div>
+        <button type="button" id="btn-auth-close" class="w-7 h-7 rounded-lg bg-slate-800 hover:bg-slate-700 text-slate-300 hover:text-white flex items-center justify-center text-xs font-bold transition-colors" aria-label="닫기">✕</button>
+      </div>
+
+      <div class="px-5 pt-4">
+        <div class="grid grid-cols-2 gap-1 p-1 bg-slate-100 rounded-xl border border-slate-200">
+          <button type="button" id="auth-tab-login" class="py-1.5 text-xs font-bold rounded-lg bg-white text-slate-900 shadow-sm transition-all">로그인</button>
+          <button type="button" id="auth-tab-register" class="py-1.5 text-xs font-semibold rounded-lg text-slate-600 hover:text-slate-900 transition-all">회원가입</button>
+        </div>
+      </div>
+
+      <form id="auth-form" class="p-5 space-y-3">
+        <div id="auth-error-box" class="hidden p-2.5 rounded-lg bg-rose-50 border border-rose-200 text-[11px] font-medium text-rose-700"></div>
+
+        <div>
+          <label for="input-auth-username" class="block text-[11px] font-bold text-slate-700 mb-1">아이디</label>
+          <input type="text" id="input-auth-username" required autocomplete="username" minlength="3" maxlength="32" placeholder="영문 소문자/숫자/._- (3~32자)" class="w-full text-xs px-3 py-2 rounded-lg border border-slate-300 focus:border-indigo-500 focus:ring-2 focus:ring-indigo-200 outline-none">
+        </div>
+
+        <div id="auth-display-name-group" class="hidden">
+          <label for="input-auth-display-name" class="block text-[11px] font-bold text-slate-700 mb-1">표시 이름 / 부서 (선택)</label>
+          <input type="text" id="input-auth-display-name" maxlength="40" placeholder="예: 김담당 / 총무과" class="w-full text-xs px-3 py-2 rounded-lg border border-slate-300 focus:border-indigo-500 focus:ring-2 focus:ring-indigo-200 outline-none">
+        </div>
+
+        <div>
+          <label for="input-auth-password" class="block text-[11px] font-bold text-slate-700 mb-1">비밀번호</label>
+          <input type="password" id="input-auth-password" required autocomplete="current-password" minlength="6" maxlength="128" placeholder="6자 이상 입력" class="w-full text-xs px-3 py-2 rounded-lg border border-slate-300 focus:border-indigo-500 focus:ring-2 focus:ring-indigo-200 outline-none">
+        </div>
+
+        <div id="auth-password-confirm-group" class="hidden">
+          <label for="input-auth-password-confirm" class="block text-[11px] font-bold text-slate-700 mb-1">비밀번호 확인</label>
+          <input type="password" id="input-auth-password-confirm" autocomplete="new-password" minlength="6" maxlength="128" placeholder="비밀번호를 다시 한 번 입력" class="w-full text-xs px-3 py-2 rounded-lg border border-slate-300 focus:border-indigo-500 focus:ring-2 focus:ring-indigo-200 outline-none">
+        </div>
+
+        <button type="submit" id="btn-auth-submit" class="w-full py-2.5 px-4 rounded-xl bg-indigo-600 hover:bg-indigo-700 disabled:opacity-60 text-white text-xs font-bold shadow transition-colors">
+          로그인하기
+        </button>
+
+        <p class="text-[11px] text-slate-500 text-center leading-relaxed">
+          로그인하면 다른 PC에서도 내 보관함 안내판을 그대로 이어서 편집할 수 있습니다.
+        </p>
+      </form>
+    </div>
+  </div>
 
   <!-- In-Page Toast Notification -->
   <div id="toast-msg" class="no-print fixed bottom-6 right-6 z-50 bg-slate-900 text-white px-4 py-2.5 rounded-xl shadow-lg border border-slate-700 text-xs font-medium flex items-center gap-2 transform translate-y-20 opacity-0 transition-all duration-300 pointer-events-none">
@@ -1564,6 +1647,31 @@
       aiDetectedTag: document.getElementById('ai-detected-tag'),
       aiDetectedDesc: document.getElementById('ai-detected-desc'),
       btnApplyRecommendedMood: document.getElementById('btn-apply-recommended-mood'),
+
+      // Auth Controls & Modal
+      headerAuthLoggedOut: document.getElementById('header-auth-logged-out'),
+      headerAuthLoggedIn: document.getElementById('header-auth-logged-in'),
+      headerUserName: document.getElementById('header-user-name'),
+      btnHeaderLogin: document.getElementById('btn-header-login'),
+      btnHeaderLogout: document.getElementById('btn-header-logout'),
+      vaultAuthBanner: document.getElementById('vault-auth-banner'),
+      vaultAuthTitle: document.getElementById('vault-auth-title'),
+      vaultAuthDesc: document.getElementById('vault-auth-desc'),
+      btnVaultAuthAction: document.getElementById('btn-vault-auth-action'),
+      authModal: document.getElementById('auth-modal'),
+      authModalTitle: document.getElementById('auth-modal-title'),
+      btnAuthClose: document.getElementById('btn-auth-close'),
+      authTabLogin: document.getElementById('auth-tab-login'),
+      authTabRegister: document.getElementById('auth-tab-register'),
+      authForm: document.getElementById('auth-form'),
+      authErrorBox: document.getElementById('auth-error-box'),
+      inputAuthUsername: document.getElementById('input-auth-username'),
+      authDisplayNameGroup: document.getElementById('auth-display-name-group'),
+      inputAuthDisplayName: document.getElementById('input-auth-display-name'),
+      inputAuthPassword: document.getElementById('input-auth-password'),
+      authPasswordConfirmGroup: document.getElementById('auth-password-confirm-group'),
+      inputAuthPasswordConfirm: document.getElementById('input-auth-password-confirm'),
+      btnAuthSubmit: document.getElementById('btn-auth-submit'),
 
       // Vault Controls
       vaultCountBadge: document.getElementById('vault-count-badge'),
@@ -2705,79 +2813,309 @@
       }
     }
 
-    // --- 7. Vault Storage Manager (LocalStorage + Cloudflare D1 API Hybrid) ---
-    const VAULT_STORAGE_KEY = 'a4_studio_vault_records_v2';
+    // --- 7. Auth & Per-User Vault Storage Manager (LocalStorage + Cloudflare D1 API) ---
+    const LEGACY_VAULT_STORAGE_KEY = 'a4_studio_vault_records_v2';
+    let currentUser = null;
+    let authMode = 'login';
     let vaultRecords = [];
     let isCloudApiConnected = false;
 
-    function loadLocalVault() {
+    function getVaultStorageKey(userId = currentUser?.id) {
+      return `a4_studio_vault_v3_${userId || 'guest'}`;
+    }
+
+    function buildSampleVaultRecords(userId) {
+      const scope = userId || 'guest';
+      const now = new Date().toISOString();
+      const trainingId = `sample-training-${scope}`;
+      const councilId = `sample-council-${scope}`;
+      return [
+        {
+          id: trainingId,
+          title: '2026학년도 역량 강화 직무연수 안내',
+          category: '연수안내',
+          memo: '기본 직무연수 양식',
+          orientation: 'landscape',
+          updated_at: now,
+          state_json: JSON.stringify({ ...state, ...PRESETS.training, id: trainingId })
+        },
+        {
+          id: councilId,
+          title: '2026년 정기 업무 협의회 개최 안내',
+          category: '협의회',
+          memo: '정기 협의회 표준 양식',
+          orientation: 'landscape',
+          updated_at: now,
+          state_json: JSON.stringify({ ...state, ...PRESETS.council, id: councilId })
+        }
+      ];
+    }
+
+    function setAuthMode(mode) {
+      authMode = mode === 'register' ? 'register' : 'login';
+      const isRegister = authMode === 'register';
+      dom.authModalTitle.textContent = isRegister ? '개인 보관함 회원가입' : '개인 보관함 로그인';
+      dom.authTabLogin.className = isRegister
+        ? 'py-1.5 text-xs font-semibold rounded-lg text-slate-600 hover:text-slate-900 transition-all'
+        : 'py-1.5 text-xs font-bold rounded-lg bg-white text-slate-900 shadow-sm transition-all';
+      dom.authTabRegister.className = isRegister
+        ? 'py-1.5 text-xs font-bold rounded-lg bg-white text-slate-900 shadow-sm transition-all'
+        : 'py-1.5 text-xs font-semibold rounded-lg text-slate-600 hover:text-slate-900 transition-all';
+      dom.authDisplayNameGroup.classList.toggle('hidden', !isRegister);
+      dom.authPasswordConfirmGroup.classList.toggle('hidden', !isRegister);
+      dom.inputAuthPassword.autocomplete = isRegister ? 'new-password' : 'current-password';
+      dom.btnAuthSubmit.textContent = isRegister ? '회원가입 및 클라우드 연결' : '로그인하기';
+      dom.authErrorBox.classList.add('hidden');
+      dom.authErrorBox.textContent = '';
+    }
+
+    function showAuthError(message) {
+      dom.authErrorBox.textContent = message;
+      dom.authErrorBox.classList.remove('hidden');
+    }
+
+    function openAuthModal(mode = 'login', notice = '') {
+      setAuthMode(mode);
+      if (notice) showAuthError(notice);
+      dom.authModal.classList.remove('hidden');
+      setTimeout(() => dom.inputAuthUsername.focus(), 30);
+    }
+
+    function closeAuthModal() {
+      dom.authModal.classList.add('hidden');
+      dom.authErrorBox.classList.add('hidden');
+      dom.inputAuthPassword.value = '';
+      dom.inputAuthPasswordConfirm.value = '';
+    }
+
+    function updateAuthUI() {
+      if (currentUser) {
+        const label = currentUser.displayName || currentUser.username;
+        dom.headerAuthLoggedOut.classList.add('hidden');
+        dom.headerAuthLoggedIn.classList.remove('hidden');
+        dom.headerAuthLoggedIn.classList.add('flex');
+        dom.headerUserName.textContent = label;
+
+        dom.vaultAuthBanner.className = 'p-3 rounded-xl border bg-emerald-50/90 border-emerald-200 flex items-center justify-between gap-2.5';
+        dom.vaultAuthTitle.className = 'text-xs font-bold text-emerald-950 flex items-center gap-1.5';
+        dom.vaultAuthTitle.innerHTML = `<span>☁️</span><span>${escapeHtml(label)} (@${escapeHtml(currentUser.username)})</span>`;
+        dom.vaultAuthDesc.className = 'text-[11px] text-emerald-800 mt-0.5 leading-snug';
+        dom.vaultAuthDesc.textContent = '이 계정의 개인 클라우드 보관함에 안전하게 동기화됩니다.';
+        dom.btnVaultAuthAction.className = 'shrink-0 px-2.5 py-1.5 text-[11px] font-bold rounded-lg bg-white hover:bg-rose-50 text-rose-700 border border-rose-200 transition-colors';
+        dom.btnVaultAuthAction.textContent = '로그아웃';
+
+        dom.dbSyncStatus.textContent = isCloudApiConnected
+          ? `☁️ ${label}님 D1 동기화됨`
+          : '☁️ 클라우드 연결 확인 중...';
+        dom.dbSyncStatus.className = isCloudApiConnected
+          ? 'text-[10px] font-bold px-2 py-0.5 rounded-full bg-emerald-100 text-emerald-800'
+          : 'text-[10px] font-semibold px-2 py-0.5 rounded-full bg-indigo-200/70 text-indigo-900';
+      } else {
+        dom.headerAuthLoggedOut.classList.remove('hidden');
+        dom.headerAuthLoggedIn.classList.add('hidden');
+        dom.headerAuthLoggedIn.classList.remove('flex');
+
+        dom.vaultAuthBanner.className = 'p-3 rounded-xl border bg-amber-50/90 border-amber-200 flex items-center justify-between gap-2.5';
+        dom.vaultAuthTitle.className = 'text-xs font-bold text-amber-950 flex items-center gap-1.5';
+        dom.vaultAuthTitle.innerHTML = '<span>👤 게스트 모드 (이 브라우저 임시저장)</span>';
+        dom.vaultAuthDesc.className = 'text-[11px] text-amber-800 mt-0.5 leading-snug';
+        dom.vaultAuthDesc.textContent = '다른 PC나 브라우저에서도 내 안내판을 불러오려면 로그인하세요.';
+        dom.btnVaultAuthAction.className = 'shrink-0 px-2.5 py-1.5 text-[11px] font-bold rounded-lg bg-amber-600 hover:bg-amber-700 text-white shadow-sm transition-colors';
+        dom.btnVaultAuthAction.textContent = '로그인 / 가입';
+
+        dom.dbSyncStatus.textContent = '💾 게스트 브라우저 보관함';
+        dom.dbSyncStatus.className = 'text-[10px] font-semibold px-2 py-0.5 rounded-full bg-amber-100 text-amber-900';
+      }
+    }
+
+    function handleSessionExpired() {
+      currentUser = null;
+      isCloudApiConnected = false;
+      state.id = null;
+      loadLocalVault(null);
+      updateAuthUI();
+      syncControlsFromState();
+      renderVaultList();
+      openAuthModal('login', '로그인 세션이 만료되었습니다. 다시 로그인해주세요.');
+    }
+
+    function loadLocalVault(userId = currentUser?.id) {
       try {
-        const raw = localStorage.getItem(VAULT_STORAGE_KEY);
+        const key = getVaultStorageKey(userId);
+        const raw = localStorage.getItem(key);
         if (raw) {
-          vaultRecords = JSON.parse(raw);
-        } else {
-          // Seed initial helpful sample records for the user
-          vaultRecords = [
-            {
-              id: 'sample-training-1',
-              title: '2026학년도 역량 강화 직무연수 안내',
-              category: '연수안내',
-              memo: '기본 직무연수 양식',
-              orientation: 'landscape',
-              updated_at: new Date().toISOString(),
-              state_json: JSON.stringify({ ...state, ...PRESETS.training, id: 'sample-training-1' })
-            },
-            {
-              id: 'sample-council-1',
-              title: '2026년 정기 업무 협의회 개최 안내',
-              category: '협의회',
-              memo: '정기 협의회 표준 양식',
-              orientation: 'landscape',
-              updated_at: new Date().toISOString(),
-              state_json: JSON.stringify({ ...state, ...PRESETS.council, id: 'sample-council-1' })
+          const parsed = JSON.parse(raw);
+          vaultRecords = Array.isArray(parsed) ? parsed : [];
+          return;
+        }
+        if (!userId) {
+          const legacyRaw = localStorage.getItem(LEGACY_VAULT_STORAGE_KEY);
+          if (legacyRaw) {
+            const legacyParsed = JSON.parse(legacyRaw);
+            if (Array.isArray(legacyParsed) && legacyParsed.length > 0) {
+              vaultRecords = legacyParsed;
+              localStorage.setItem(key, JSON.stringify(vaultRecords));
+              return;
             }
-          ];
-          localStorage.setItem(VAULT_STORAGE_KEY, JSON.stringify(vaultRecords));
+          }
+          vaultRecords = buildSampleVaultRecords(null);
+          localStorage.setItem(key, JSON.stringify(vaultRecords));
+        } else {
+          vaultRecords = [];
         }
       } catch (e) {
         vaultRecords = [];
       }
     }
 
-    function saveLocalVault() {
+    function saveLocalVault(userId = currentUser?.id) {
       try {
-        localStorage.setItem(VAULT_STORAGE_KEY, JSON.stringify(vaultRecords));
+        localStorage.setItem(getVaultStorageKey(userId), JSON.stringify(vaultRecords));
       } catch (e) {}
     }
 
     async function fetchVaultFromCloud() {
+      const targetUserId = currentUser?.id;
+      if (!targetUserId) {
+        isCloudApiConnected = false;
+        updateAuthUI();
+        return;
+      }
       try {
-        const res = await fetch('/api/signs', { headers: { 'Accept': 'application/json' } });
+        const res = await fetch('/api/signs', {
+          credentials: 'same-origin',
+          headers: { 'Accept': 'application/json' }
+        });
+        if (currentUser?.id !== targetUserId) return;
+        if (res.status === 401) {
+          handleSessionExpired();
+          return;
+        }
         if (!res.ok) throw new Error('API not active');
         const data = await res.json();
+        if (currentUser?.id !== targetUserId) return;
         if (Array.isArray(data.items)) {
           isCloudApiConnected = true;
-          if (data.items.length === 0 && vaultRecords.length > 0) {
-            // Seed empty D1 database with existing local/sample records
-            for (const rec of vaultRecords) {
-              await fetch('/api/signs', {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify(rec)
-              });
-            }
-          } else if (data.items.length > 0) {
+          if (data.items.length === 0) {
+            const samples = buildSampleVaultRecords(targetUserId);
+            await Promise.all(samples.map(rec => fetch('/api/signs', {
+              method: 'POST',
+              credentials: 'same-origin',
+              headers: { 'Content-Type': 'application/json' },
+              body: JSON.stringify(rec)
+            })));
+            if (currentUser?.id !== targetUserId) return;
+            vaultRecords = samples;
+          } else {
             vaultRecords = data.items;
-            saveLocalVault();
           }
-          dom.dbSyncStatus.textContent = '☁️ Cloudflare D1 연결됨';
-          dom.dbSyncStatus.className = 'text-[10px] font-bold px-2 py-0.5 rounded-full bg-emerald-100 text-emerald-800';
+          saveLocalVault(targetUserId);
+          updateAuthUI();
           renderVaultList();
         }
       } catch (e) {
+        if (currentUser?.id !== targetUserId) return;
         isCloudApiConnected = false;
-        dom.dbSyncStatus.textContent = '💾 브라우저 보관함 (오프라인/로컬)';
+        updateAuthUI();
+        dom.dbSyncStatus.textContent = '⚠️ 오프라인 캐시 사용 중';
       }
+    }
+
+    async function checkAuthSession() {
+      try {
+        const res = await fetch('/api/auth/me', {
+          credentials: 'same-origin',
+          headers: { 'Accept': 'application/json' }
+        });
+        if (!res.ok) throw new Error('Auth API unavailable');
+        const data = await res.json();
+        currentUser = data.authenticated && data.user ? data.user : null;
+      } catch (e) {
+        currentUser = null;
+      }
+      loadLocalVault(currentUser?.id);
+      updateAuthUI();
+      renderVaultList();
+      if (currentUser) {
+        await fetchVaultFromCloud();
+      }
+    }
+
+    async function handleAuthSubmit(e) {
+      e.preventDefault();
+      dom.authErrorBox.classList.add('hidden');
+      const username = dom.inputAuthUsername.value.trim().toLowerCase();
+      const displayName = dom.inputAuthDisplayName.value.trim();
+      const password = dom.inputAuthPassword.value;
+      const passwordConfirm = dom.inputAuthPasswordConfirm.value;
+
+      if (!/^[a-z0-9._-]{3,32}$/.test(username)) {
+        showAuthError('아이디는 3~32자의 영문 소문자, 숫자, ., _, - 만 사용할 수 있습니다.');
+        return;
+      }
+      if (password.length < 6) {
+        showAuthError('비밀번호는 6자 이상 입력해주세요.');
+        return;
+      }
+      if (authMode === 'register' && password !== passwordConfirm) {
+        showAuthError('비밀번호 확인이 일치하지 않습니다.');
+        return;
+      }
+
+      dom.btnAuthSubmit.disabled = true;
+      dom.btnAuthSubmit.textContent = authMode === 'register' ? '가입 처리 중...' : '로그인 중...';
+
+      try {
+        const endpoint = authMode === 'register' ? '/api/auth/register' : '/api/auth/login';
+        const payload = authMode === 'register'
+          ? { username, displayName, password }
+          : { username, password };
+        const res = await fetch(endpoint, {
+          method: 'POST',
+          credentials: 'same-origin',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(payload)
+        });
+        const data = await res.json().catch(() => ({}));
+        if (!res.ok || !data.ok) {
+          showAuthError(data.error || '인증에 실패했습니다.');
+          return;
+        }
+
+        currentUser = data.user;
+        isCloudApiConnected = true;
+        if (state.id && !state.id.endsWith(`-${currentUser.id}`)) {
+          state.id = null;
+        }
+        closeAuthModal();
+        loadLocalVault(currentUser.id);
+        updateAuthUI();
+        syncControlsFromState();
+        await fetchVaultFromCloud();
+        showToast(`${currentUser.displayName || currentUser.username}님 환영합니다! 클라우드 보관함이 연결되었습니다.`);
+      } catch (err) {
+        showAuthError('서버와 통신할 수 없습니다. 잠시 후 다시 시도해주세요.');
+      } finally {
+        dom.btnAuthSubmit.disabled = false;
+        setAuthMode(authMode);
+      }
+    }
+
+    async function handleLogout() {
+      try {
+        await fetch('/api/auth/logout', {
+          method: 'POST',
+          credentials: 'same-origin'
+        });
+      } catch (e) {}
+      currentUser = null;
+      isCloudApiConnected = false;
+      state.id = null;
+      loadLocalVault(null);
+      updateAuthUI();
+      syncControlsFromState();
+      renderVaultList();
+      showToast('로그아웃되었습니다. 게스트 브라우저 보관함으로 전환되었습니다.', '👋');
     }
 
     async function saveSignToVault(asNew = true) {
@@ -2796,27 +3134,32 @@
         state_json: JSON.stringify(state)
       };
 
-      // Update local array first for instant UI response
       const existingIdx = vaultRecords.findIndex(r => r.id === targetId);
       if (existingIdx >= 0) {
         vaultRecords[existingIdx] = record;
       } else {
         vaultRecords.unshift(record);
       }
-      saveLocalVault();
+      saveLocalVault(currentUser?.id);
 
-      // Sync to Cloudflare D1 API if available
       let cloudSyncFailed = false;
-      if (isCloudApiConnected) {
+      if (currentUser) {
         try {
           const method = (!asNew && existingIdx >= 0) ? 'PUT' : 'POST';
           const url = method === 'PUT' ? `/api/signs/${encodeURIComponent(targetId)}` : '/api/signs';
           const res = await fetch(url, {
             method,
+            credentials: 'same-origin',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify(record)
           });
+          if (res.status === 401) {
+            handleSessionExpired();
+            return;
+          }
           if (!res.ok) throw new Error(`HTTP ${res.status}`);
+          isCloudApiConnected = true;
+          updateAuthUI();
         } catch (err) {
           cloudSyncFailed = true;
           console.warn('Cloud sync fallback to local:', err);
@@ -2825,23 +3168,32 @@
 
       syncControlsFromState();
       renderVaultList();
-      if (cloudSyncFailed) {
+      if (!currentUser) {
+        showToast('이 브라우저(게스트)에 저장되었습니다. 다른 PC 연동은 로그인하세요.', '💾');
+      } else if (cloudSyncFailed) {
         showToast('로컬에는 저장되었으나 클라우드 DB 동기화에 실패했습니다.', '⚠️');
       } else {
-        showToast(asNew ? '보관함에 새 안내판으로 저장되었습니다!' : '수정된 내용이 기존 안내판에 덮어쓰기 저장되었습니다!');
+        showToast(asNew ? '개인 클라우드 보관함에 새 안내판으로 저장되었습니다!' : '개인 클라우드 보관함에 수정 내용이 저장되었습니다!');
       }
     }
 
     async function deleteSignFromVault(id) {
       vaultRecords = vaultRecords.filter(r => r.id !== id);
-      saveLocalVault();
+      saveLocalVault(currentUser?.id);
       if (state.id === id) {
         state.id = null;
         syncControlsFromState();
       }
-      if (isCloudApiConnected) {
+      if (currentUser) {
         try {
-          await fetch(`/api/signs/${encodeURIComponent(id)}`, { method: 'DELETE' });
+          const res = await fetch(`/api/signs/${encodeURIComponent(id)}`, {
+            method: 'DELETE',
+            credentials: 'same-origin'
+          });
+          if (res.status === 401) {
+            handleSessionExpired();
+            return;
+          }
         } catch (e) {}
       }
       renderVaultList();
@@ -3320,6 +3672,29 @@
         reader.readAsText(file);
       });
 
+      // Auth Modal & Actions
+      dom.btnHeaderLogin.addEventListener('click', () => openAuthModal('login'));
+      dom.btnHeaderLogout.addEventListener('click', handleLogout);
+      dom.btnVaultAuthAction.addEventListener('click', () => {
+        if (currentUser) {
+          handleLogout();
+        } else {
+          openAuthModal('login');
+        }
+      });
+      dom.btnAuthClose.addEventListener('click', closeAuthModal);
+      dom.authModal.addEventListener('click', (e) => {
+        if (e.target === dom.authModal) closeAuthModal();
+      });
+      document.addEventListener('keydown', (e) => {
+        if (e.key === 'Escape' && !dom.authModal.classList.contains('hidden')) {
+          closeAuthModal();
+        }
+      });
+      dom.authTabLogin.addEventListener('click', () => setAuthMode('login'));
+      dom.authTabRegister.addEventListener('click', () => setAuthMode('register'));
+      dom.authForm.addEventListener('submit', handleAuthSubmit);
+
       // Print / PDF
       dom.btnPrint.addEventListener('click', () => {
         window.print();
@@ -3367,7 +3742,8 @@
         }
       } catch (e) {}
 
-      loadLocalVault();
+      loadLocalVault(null);
+      updateAuthUI();
       renderThemeSelector();
       renderLookbookStyles('all');
       syncControlsFromState();
@@ -3375,7 +3751,7 @@
       syncInputsToState();
       renderVaultList();
       pushHistory();
-      fetchVaultFromCloud();
+      checkAuthSession();
     });
   </script>
 </body>
