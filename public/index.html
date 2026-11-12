@@ -231,7 +231,7 @@
           <div class="flex items-center justify-between gap-2">
             <label class="text-xs font-bold text-slate-800">⚡ 업무 · 행사 빠른 템플릿</label>
             <div class="flex items-center gap-2.5">
-              <button type="button" id="btn-goto-lookbook" class="text-[11px] font-bold text-indigo-600 hover:text-indigo-800">🎨 스타일 룩북(16종) →</button>
+              <button type="button" id="btn-goto-lookbook" class="text-[11px] font-bold text-indigo-600 hover:text-indigo-800">🎨 스타일 룩북(71종) →</button>
               <button type="button" id="btn-reset-blank" class="text-[11px] text-slate-500 hover:text-slate-800 underline">빈 양식 초기화</button>
             </div>
           </div>
@@ -509,16 +509,17 @@
       <!-- TAB 3: DESIGN, THEME, ICON & QR -->
       <div id="tab-panel-design" class="tab-panel hidden p-4 sm:p-5 space-y-4">
         <!-- Curated Brand Lookbook Styles (Keeps current text!) -->
-        <div class="p-3 rounded-xl bg-gradient-to-br from-slate-50 to-indigo-50/60 border border-slate-200 space-y-2.5">
+        <div class="p-3 rounded-xl bg-gradient-to-br from-slate-50 to-indigo-50/60 border border-slate-200 space-y-2">
           <div class="flex items-center justify-between gap-2">
             <div>
               <label class="text-xs font-bold text-slate-900 flex items-center gap-1.5">
-                <span>🎨 디자인 룩북 스타일 갤러리</span>
-                <span class="text-[10px] font-bold px-1.5 py-0.5 rounded bg-indigo-100 text-indigo-700">16종</span>
+                <span>🎨 브랜드 디자인 룩북 갤러리</span>
+                <span id="lookbook-count-badge" class="text-[10px] font-bold px-1.5 py-0.5 rounded bg-indigo-100 text-indigo-700">71종</span>
               </label>
-              <p class="text-[10px] text-slate-500 mt-0.5">입력한 문구는 유지한 채 색상·프레임·카드·서체 조합을 한 번에 바꿉니다.</p>
+              <p class="text-[10px] text-slate-500 mt-0.5">오빠두엑셀 디자인 시스템 인기도 순 · 문구 유지, 디자인만 즉시 적용</p>
             </div>
           </div>
+          <input type="search" id="input-lookbook-search" class="w-full text-[11px] px-2.5 py-1.5 rounded-lg border border-slate-300 bg-white focus:border-indigo-500 outline-none" placeholder="브랜드 · 키워드 검색 (예: 닌텐도, 토스, 삼성, 넷플릭스, 클로드, KRDS...)">
           <div class="flex flex-wrap gap-1" id="lookbook-filter-bar">
             <button type="button" class="lookbook-filter-btn px-2 py-0.5 rounded-full text-[10px] font-bold bg-slate-900 text-white transition" data-cat="all">전체</button>
             <button type="button" class="lookbook-filter-btn px-2 py-0.5 rounded-full text-[10px] font-semibold bg-white text-slate-600 border border-slate-200 hover:bg-slate-100 transition" data-cat="public">공공·교육</button>
@@ -527,15 +528,15 @@
             <button type="button" class="lookbook-filter-btn px-2 py-0.5 rounded-full text-[10px] font-semibold bg-white text-slate-600 border border-slate-200 hover:bg-slate-100 transition" data-cat="dark">다크모드</button>
             <button type="button" class="lookbook-filter-btn px-2 py-0.5 rounded-full text-[10px] font-semibold bg-white text-slate-600 border border-slate-200 hover:bg-slate-100 transition" data-cat="vivid">감성·컬러</button>
           </div>
-          <div class="grid grid-cols-2 gap-1.5 max-h-[220px] overflow-y-auto pr-0.5" id="lookbook-style-grid">
+          <div class="grid grid-cols-2 gap-1.5 max-h-[280px] overflow-y-auto pr-0.5" id="lookbook-style-grid">
             <!-- Populated dynamically via JS -->
           </div>
         </div>
 
-        <!-- Theme Selector (24 Themes) -->
+        <!-- Theme Selector -->
         <div>
           <div class="flex items-center justify-between mb-1.5">
-            <label class="text-xs font-bold text-slate-800">개별 색상 팔레트 (24종)</label>
+            <label id="palette-count-label" class="text-xs font-bold text-slate-800">개별 색상 팔레트 (70+종)</label>
             <span class="text-[10px] text-slate-400">색상만 단독 변경</span>
           </div>
           <div class="grid grid-cols-3 sm:grid-cols-4 gap-1.5 max-h-[185px] overflow-y-auto pr-0.5" id="theme-selector-grid">
@@ -1536,8 +1537,11 @@
 
       // Design Controls
       btnGotoLookbook: document.getElementById('btn-goto-lookbook'),
+      lookbookCountBadge: document.getElementById('lookbook-count-badge'),
+      inputLookbookSearch: document.getElementById('input-lookbook-search'),
       lookbookFilterBar: document.getElementById('lookbook-filter-bar'),
       lookbookGrid: document.getElementById('lookbook-style-grid'),
+      paletteCountLabel: document.getElementById('palette-count-label'),
       themeGrid: document.getElementById('theme-selector-grid'),
       selectSurface: document.getElementById('select-surface'),
       selectFrame: document.getElementById('select-frame'),
@@ -1950,80 +1954,219 @@
       }
     };
 
-    // --- 4B. Curated Brand Lookbook Styles (16 Complete Visual Design Systems) ---
-    const LOOKBOOK_STYLES = [
-      {
-        id: 'lb-krds', cat: 'public', name: 'KRDS 공공 표준', desc: '정부 청색 · 좌측 강조 바',
-        theme: 'krds-public', frame: 'left-bar', surfaceStyle: 'left-stripe', font: 'font-pretendard', align: 'text-left', bulletStyle: 'check'
-      },
-      {
-        id: 'lb-ebs', cat: 'public', name: '아카데미 네이비', desc: 'EBS형 상단 듀오톤 · 학술',
-        theme: 'ebs-navy', frame: 'split-duotone', surfaceStyle: 'classic', font: 'font-pretendard', align: 'text-center', bulletStyle: 'number'
-      },
-      {
-        id: 'lb-royal', cat: 'public', name: '공식 연수 블루', desc: '더블 라인 · 클래식 균형',
-        theme: 'royal-blue', frame: 'double-line', surfaceStyle: 'classic', font: 'font-pretendard', align: 'text-center', bulletStyle: 'check'
-      },
-      {
-        id: 'lb-toss', cat: 'modern', name: '토스 클린 블루', desc: '소프트 입체 카드 · 라운드',
-        theme: 'toss-blue', frame: 'card-elevated', surfaceStyle: 'elevated', font: 'font-pretendard', align: 'text-left', bulletStyle: 'check'
-      },
-      {
-        id: 'lb-naver', cat: 'modern', name: '네이버 프레시 그린', desc: '상단 헤더 밴드 · 명쾌한 안내',
-        theme: 'naver-green', frame: 'header-band', surfaceStyle: 'elevated', font: 'font-pretendard', align: 'text-left', bulletStyle: 'arrow'
-      },
-      {
-        id: 'lb-notion', cat: 'modern', name: '노션 페이퍼 미니멀', desc: '따뜻한 종이 · 좌측 라인',
-        theme: 'notion-paper', frame: 'none', surfaceStyle: 'left-stripe', font: 'font-pretendard', align: 'text-left', bulletStyle: 'dot'
-      },
-      {
-        id: 'lb-hyundai', cat: 'editorial', name: '현대카드 모노 엣지', desc: '직각 샤프 · 레드 포인트',
-        theme: 'hyundai-black', frame: 'split-duotone', surfaceStyle: 'editorial', font: 'font-display', align: 'text-left', bulletStyle: 'arrow'
-      },
-      {
-        id: 'lb-29cm', cat: 'editorial', name: '29CM 매거진 모노', desc: '볼드 흑백 · 에디토리얼 직각',
-        theme: 'minimal', frame: 'solid-bold', surfaceStyle: 'editorial', font: 'font-display', align: 'text-left', bulletStyle: 'number'
-      },
-      {
-        id: 'lb-anthropic', cat: 'editorial', name: '앤트로픽 웜 세리프', desc: '크림 캔버스 · 명조체 품격',
-        theme: 'anthropic-cream', frame: 'double-line', surfaceStyle: 'classic', font: 'font-serif', align: 'text-center', bulletStyle: 'dot'
-      },
-      {
-        id: 'lb-aesop', cat: 'editorial', name: '이솝 어스 베이지', desc: '모서리 브래킷 · 감성 명조',
-        theme: 'aesop-earth', frame: 'corner-accent', surfaceStyle: 'editorial', font: 'font-myeongjo', align: 'text-left', bulletStyle: 'dot'
-      },
-      {
-        id: 'lb-sulwhasoo', cat: 'editorial', name: '설화수 한지 골드', desc: '귀빈 초청 · 전통 고전미',
-        theme: 'sulwhasoo-gold', frame: 'double-line', surfaceStyle: 'classic', font: 'font-batang', align: 'text-center', bulletStyle: 'dot'
-      },
-      {
-        id: 'lb-toss-dark', cat: 'dark', name: '토스 다크 네온', desc: 'OLED 다크 · 블루 글로우',
-        theme: 'toss-dark', frame: 'card-elevated', surfaceStyle: 'glass-glow', font: 'font-pretendard', align: 'text-left', bulletStyle: 'arrow'
-      },
-      {
-        id: 'lb-linear-dark', cat: 'dark', name: '리니어 다크 인디고', desc: '정밀 IT 포럼 · 다크 글래스',
-        theme: 'linear-dark', frame: 'corner-accent', surfaceStyle: 'glass-glow', font: 'font-display', align: 'text-left', bulletStyle: 'arrow'
-      },
-      {
-        id: 'lb-kakao', cat: 'vivid', name: '카카오 블랙&옐로우', desc: '고대비 시선집중 · 볼드',
-        theme: 'kakao-yellow', frame: 'solid-bold', surfaceStyle: 'elevated', font: 'font-impact', align: 'text-center', bulletStyle: 'check'
-      },
-      {
-        id: 'lb-baemin', cat: 'vivid', name: '배민 2.0 민트 팝', desc: '청량한 민트 · 행사/웰컴',
-        theme: 'baemin-mint', frame: 'header-band', surfaceStyle: 'elevated', font: 'font-pretendard', align: 'text-center', bulletStyle: 'check'
-      },
-      {
-        id: 'lb-kurly', cat: 'vivid', name: '컬리 로얄 퍼플', desc: '우아한 보라 · 세미나/초청',
-        theme: 'kurly-purple', frame: 'top-accent', surfaceStyle: 'elevated', font: 'font-pretendard', align: 'text-center', bulletStyle: 'dot'
+    // --- 4A. Dynamic Brand Palette Builder (Populated from Oppadu Design Systems Gallery Top 60+) ---
+    function mixHex(hexA, hexB, weightB) {
+      const parse = (h) => {
+        const clean = h.replace('#', '');
+        const full = clean.length === 3 ? clean.split('').map(c => c + c).join('') : clean;
+        return [parseInt(full.slice(0, 2), 16), parseInt(full.slice(2, 4), 16), parseInt(full.slice(4, 6), 16)];
+      };
+      const [r1, g1, b1] = parse(hexA);
+      const [r2, g2, b2] = parse(hexB);
+      const t = Math.max(0, Math.min(1, weightB));
+      const toHex = (n) => Math.round(n).toString(16).padStart(2, '0');
+      return `#${toHex(r1 + (r2 - r1) * t)}${toHex(g1 + (g2 - g1) * t)}${toHex(b1 + (b2 - b1) * t)}`.toUpperCase();
+    }
+
+    function getContrastText(hex) {
+      const clean = hex.replace('#', '');
+      const full = clean.length === 3 ? clean.split('').map(c => c + c).join('') : clean;
+      const r = parseInt(full.slice(0, 2), 16) / 255;
+      const g = parseInt(full.slice(2, 4), 16) / 255;
+      const b = parseInt(full.slice(4, 6), 16) / 255;
+      const lum = 0.2126 * r + 0.7152 * g + 0.0722 * b;
+      return lum > 0.62 ? '#111827' : '#FFFFFF';
+    }
+
+    function makeBrandPalette(key, name, tag, accent, opts = {}) {
+      const isDark = !!opts.isDark;
+      const bg = opts.bg || (isDark ? '#111318' : '#FFFFFF');
+      const cardBg = opts.cardBg || (isDark ? mixHex(bg, '#FFFFFF', 0.06) : '#FFFFFF');
+      if (isDark) {
+        const badgeBg = opts.badgeBg || mixHex(accent, bg, 0.56);
+        return THEME_PALETTES[key] = {
+          name, tag, swatch: opts.swatch || accent, isDark: true,
+          bg, cardBg,
+          text: opts.text || '#E5E7EB',
+          titleColor: opts.titleColor || '#FFFFFF',
+          subtitleColor: opts.subtitleColor || '#CBD5E1',
+          accent,
+          badgeBg,
+          badgeText: opts.badgeText || (getContrastText(badgeBg) === '#111827' ? '#111827' : mixHex(accent, '#FFFFFF', 0.84)),
+          badgeBorder: opts.badgeBorder || accent,
+          boxBg: opts.boxBg || mixHex(bg, '#FFFFFF', 0.05),
+          boxBorder: opts.boxBorder || mixHex(accent, bg, 0.62),
+          labelBg: opts.labelBg || mixHex(accent, bg, 0.7),
+          labelText: opts.labelText || mixHex(accent, '#FFFFFF', 0.85)
+        };
       }
+      const badgeBg = opts.badgeBg || accent;
+      return THEME_PALETTES[key] = {
+        name, tag, swatch: opts.swatch || accent,
+        bg, cardBg,
+        text: opts.text || '#1E293B',
+        titleColor: opts.titleColor || mixHex(accent, '#0F172A', 0.52),
+        subtitleColor: opts.subtitleColor || '#475569',
+        accent: opts.uiAccent || (getContrastText(accent) === '#111827' ? mixHex(accent, '#0F172A', 0.32) : accent),
+        badgeBg,
+        badgeText: opts.badgeText || getContrastText(badgeBg),
+        badgeBorder: opts.badgeBorder || mixHex(badgeBg, '#000000', 0.14),
+        boxBg: opts.boxBg || mixHex(accent, '#FFFFFF', 0.93),
+        boxBorder: opts.boxBorder || mixHex(accent, '#FFFFFF', 0.74),
+        labelBg: opts.labelBg || mixHex(accent, '#FFFFFF', 0.84),
+        labelText: opts.labelText || mixHex(accent, '#0F172A', 0.48)
+      };
+    }
+
+    const BRAND_PALETTE_SPECS = [
+      ['nintendo', '닌텐도 레드', '게이밍/소비자', '#E60012', { bg: '#FFFFFF', text: '#333333', titleColor: '#1F2937' }],
+      ['samsung-pay', '삼성페이 블루', '핀테크/공식', '#1428A0', { bg: '#F7F8FD', titleColor: '#0F1E78', boxBg: '#F0F2FC', boxBorder: '#BBC5EF', labelBg: '#DFE4F8', labelText: '#10218A' }],
+      ['ant-design', '앤트 디자인 블루', '시스템/엔터프라이즈', '#1677FF', { bg: '#F5F7FA', titleColor: '#0F172A' }],
+      ['kakao-bank', '카카오뱅크 옐로우', '핀테크/시선집중', '#FFE300', { bg: '#FFFDF4', text: '#1E1E1E', titleColor: '#1E1E1E', uiAccent: '#9A8400', boxBg: '#FFFBE0', boxBorder: '#F2DE5A', labelBg: '#FFF380', labelText: '#1E1E1E' }],
+      ['naver-pay', '네이버페이 그린', '핀테크/실용', '#03C75A', { bg: '#FFFFFF', boxBg: '#F1FCF6', labelBg: '#E0F8EC', labelText: '#018236' }],
+      ['atlassian', '아틀라시안 블루', '생산성/협업', '#0052CC', { bg: '#FFFFFF', text: '#172B4D', titleColor: '#172B4D', boxBg: '#F4F5F7', boxBorder: '#DFE1E6', labelBg: '#DEEBFF', labelText: '#0747A6' }],
+      ['olive-young', '올리브영 라임', '이커머스/트렌드', '#82DC28', { bg: '#FFFFFF', text: '#1E293B', titleColor: '#244A06', uiAccent: '#589C14', boxBg: '#F4FCE9', boxBorder: '#CBF294', labelBg: '#E4F8C8', labelText: '#2A5508' }],
+      ['chzzk', '치지직 네온그린', '미디어/게이밍', '#1BB373', { bg: '#0E0F10', isDark: true, cardBg: '#16181A', boxBg: '#141917', boxBorder: '#234D3A', labelBg: '#123626', labelText: '#7CF2BE' }],
+      ['cloudflare', '클라우드플레어 오렌지', '인프라/테크', '#F38020', { bg: '#F7F7F8', text: '#1D1D1F', titleColor: '#1D1D1F', badgeBg: '#0051C3', badgeText: '#FFFFFF', badgeBorder: '#003E96' }],
+      ['google-material', '구글 머티리얼 바이올렛', '디자인시스템/모던', '#6442D6', { bg: '#FEFBFF', text: '#1C1B1D', boxBg: '#F8F1F6', boxBorder: '#DFD2F2', labelBg: '#EDE4FF', labelText: '#3E229E' }],
+      ['netflix', '넷플릭스 다크레드', '미디어/다크', '#E50914', { bg: '#141414', isDark: true, cardBg: '#1F1F1F', boxBg: '#1C1617', boxBorder: '#6B0408', labelBg: '#3D0205', labelText: '#FCBFC4' }],
+      ['daangn', '당근마켓 오렌지', '커뮤니티/친근', '#FF6F0F', { bg: '#FFFFFF', titleColor: '#662800', boxBg: '#FFF6EE', boxBorder: '#FFD8B5', labelBg: '#FFEFE0', labelText: '#8A3800' }],
+      ['hana-bank', '하나은행 틸그린', '금융/신뢰', '#008485', { bg: '#FFFFFF', text: '#222A3B', boxBg: '#F1F9F9', boxBorder: '#A9DFDD', labelBg: '#DFF4F3', labelText: '#005657' }],
+      ['zigzag', '지그재그 마젠타', '커머스/라이프', '#F55DD6', { bg: '#FFFFFF', text: '#121212', titleColor: '#5C114E' }],
+      ['musinsa', '무신사 블랙', '패션/에디토리얼', '#000000', { bg: '#FFFFFF', text: '#1A1A1A', titleColor: '#000000', boxBg: '#F5F5F5', boxBorder: '#D4D4D4', labelBg: '#1A1A1A', labelText: '#FFFFFF' }],
+      ['stibee', '스티비 코랄레드', '마케팅/뉴스레터', '#FF6464', { bg: '#FFFFFF', text: '#202124', boxBg: '#FFF8F8', boxBorder: '#FFD6D6', labelBg: '#FFEAEA', labelText: '#991B1B' }],
+      ['grafana', '그라파나 다크오렌지', '모니터링/인프라', '#F46800', { bg: '#181B1F', isDark: true, cardBg: '#20242A', boxBg: '#1E2126', boxBorder: '#633412', labelBg: '#42220B', labelText: '#FFD1AD' }],
+      ['airtable', '에어테이블 골드', '생산성/워크스페이스', '#FCB400', { bg: '#FFFFFF', text: '#1F1F1F', titleColor: '#4A3400', uiAccent: '#C98A00' }],
+      ['tiffany', '티파니 민트블루', '럭셔리/초청', '#81D8D0', { bg: '#FFFFFF', text: '#000000', titleColor: '#0E423D', uiAccent: '#2C8C84', boxBg: '#F2FBFA', boxBorder: '#B7ECE7', labelBg: '#D8F5F2', labelText: '#0E423D' }],
+      ['cu-purple', 'CU 퍼플&그린', '리테일/편의', '#693B97', { bg: '#F7F4FB', titleColor: '#3B1E59', boxBg: '#FFFFFF', boxBorder: '#D6C8EB', labelBg: '#E9E7F6', labelText: '#3B1E59' }],
+      ['yogiyo', '요기요 비비드핑크', '푸드/이벤트', '#FA0050', { bg: '#FFFFFF', boxBg: '#FFF1F5', boxBorder: '#FFD0DD', labelBg: '#FFE0EA', labelText: '#A60035' }],
+      ['kia-midnight', '기아 미드나잇', '모빌리티/모던', '#05141F', { bg: '#FFFFFF', text: '#05141F', titleColor: '#05141F', boxBg: '#F8F8F8', boxBorder: '#DADBDC', labelBg: '#05141F', labelText: '#FFFFFF' }],
+      ['lg-red', 'LG 액티브레드', '전자/소비자', '#EA1917', { bg: '#FFFFFF', text: '#111111', titleColor: '#111111' }],
+      ['kakao-pay', '카카오페이 옐로우', '페이/생활', '#FEE500', { bg: '#FFFEF7', text: '#191919', titleColor: '#191919', uiAccent: '#9A8700', boxBg: '#FFFEF0', boxBorder: '#F5E56B', labelBg: '#FFF580', labelText: '#191919' }],
+      ['perplexity', '퍼플렉시티 틸', 'AI/리서치', '#1FB8CD', { bg: '#F3F3EE', text: '#13343B', titleColor: '#13343B', uiAccent: '#137B8A', boxBg: '#FFFFFF', boxBorder: '#C8E6EB', labelBg: '#DCF3F6', labelText: '#13343B' }],
+      ['canva-violet', '캔바 크리에이티브', '디자인/창작', '#7D2AE7', { bg: '#FFFFFF', text: '#0E1318' }],
+      ['bilibili-pink', '빌리빌리 핑크', '미디어/커뮤니티', '#FF6699', { bg: '#FFFFFF', text: '#18191C' }],
+      ['gentle-monster', '젠틀몬스터 아방가르드', '패션/전시', '#111111', { bg: '#F3F4F6', text: '#111111', titleColor: '#111111', boxBg: '#FFFFFF', boxBorder: '#D8D8D8', labelBg: '#111111', labelText: '#FFFFFF' }],
+      ['kt-red', 'KT 레드&블랙', '통신/미디어', '#FE2E36', { bg: '#FFFFFF', text: '#191A1B', titleColor: '#071118' }],
+      ['class101', '클래스101 오렌지', '교육/클래스', '#FF5D00', { bg: '#FFFFFF', text: '#0C0C0C' }],
+      ['kb-yellow', 'KB 스타뱅킹 골드', '금융/신뢰', '#FFBC00', { bg: '#FFFFFF', text: '#1A1A1A', titleColor: '#3D2C00', uiAccent: '#B88400', boxBg: '#FFFBE6', boxBorder: '#FFE780', labelBg: '#FFF3B3', labelText: '#3D2C00' }],
+      ['ms-excel', 'MS 엑셀 포레스트', '생산성/문서', '#107C41', { bg: '#E4F1DF', text: '#0E1726', titleColor: '#0A4D28', boxBg: '#FFFFFF', boxBorder: '#B7DFC2', labelBg: '#D4EFDC', labelText: '#0A4D28' }],
+      ['deliveroo', '딜리버루 시안민트', '서비스/안내', '#00CCBC', { bg: '#FFFFFF', titleColor: '#005C55', uiAccent: '#008F85', boxBg: '#E6FAF8', boxBorder: '#8CE8E0', labelBg: '#C0F2EE', labelText: '#005C55' }],
+      ['hyundai-motor', '현대자동차 네이비', '모빌리티/프리미엄', '#002C5F', { bg: '#F6F3F2', text: '#141414', titleColor: '#002C5F', boxBg: '#FFFFFF', boxBorder: '#D2DAE4', labelBg: '#E4DCD3', labelText: '#002C5F' }],
+      ['sk-telecom', 'SK텔레콤 인디고', '통신/AI', '#3617CE', { bg: '#FFFFFF', text: '#14142B', boxBg: '#F5F4FC', boxBorder: '#D1C8FA', labelBg: '#ECE8FD', labelText: '#260E96' }],
+      ['instagram', '인스타그램 로즈', '소셜/미디어', '#E1306C', { bg: '#FFFFFF', text: '#262626' }],
+      ['amorepacific', '아모레퍼시픽 퓨어', '뷰티/미니멀', '#121212', { bg: '#FAFAFA', text: '#121212', titleColor: '#121212', boxBg: '#FFFFFF', boxBorder: '#E5E5E5', labelBg: '#F0F0F0', labelText: '#121212' }],
+      ['sungsimdang', '성심당 클래식레드', '브랜드/장인', '#D71920', { bg: '#FBF7F0', text: '#211D18', titleColor: '#5C1114', boxBg: '#FFFFFF', boxBorder: '#EAD5C9', labelBg: '#F9E1DF', labelText: '#7A1115' }],
+      ['kakao-t', '카카오T 모빌리티', '모빌리티/이동', '#FAE100', { bg: '#FFFFFF', text: '#191919', titleColor: '#191919', uiAccent: '#9A8700', boxBg: '#FFFEF0', boxBorder: '#FFEE47', labelBg: '#FFFCC2', labelText: '#191919' }],
+      ['starbucks', '스타벅스 딥그린', '카페/라운지', '#00704A', { bg: '#F7F6F2', text: '#1E3932', titleColor: '#1E3932', boxBg: '#FFFFFF', boxBorder: '#C7DDD3', labelBg: '#E3F0EA', labelText: '#1E3932' }],
+      ['disney-plus', '디즈니+ 미드나잇', '미디어/다크', '#02D6E8', { bg: '#040714', isDark: true, cardBg: '#0C1226', boxBg: '#091024', boxBorder: '#154B63', labelBg: '#0E2D45', labelText: '#BDF7FA' }],
+      ['shinhan-sol', '신한 쏠 블루', '금융/신뢰', '#0046FF', { bg: '#F4F7FB', text: '#171B24', titleColor: '#00278F', boxBg: '#FFFFFF', boxBorder: '#C9DAFF', labelBg: '#E0EAFF', labelText: '#00278F' }],
+      ['obsidian', '옵시디언 다크퍼플', '지식/노트', '#7852EE', { bg: '#16151D', isDark: true, cardBg: '#201E29', boxBg: '#1C1A24', boxBorder: '#43317D', labelBg: '#2D2159', labelText: '#DFD5FF' }],
+      ['yanolja', '야놀자 마젠타핑크', '여가/트래블', '#FF3478', { bg: '#FFFFFF', boxBg: '#FFF0F5', boxBorder: '#FFB2CB', labelBg: '#FFD9E7', labelText: '#9E1144' }],
+      ['yeogi-eottae', '여기어때 코랄레드', '트래블/행사', '#F7323F', { bg: '#FFFFFF', boxBg: '#FFF5F5', boxBorder: '#FDB8B4', labelBg: '#FFEDEA', labelText: '#A81520' }],
+      ['zigbang', '직방 오렌지', '공간/주거', '#FF6905', { bg: '#FFFFFF', text: '#1A1A1A', boxBg: '#FFF7F0', boxBorder: '#FFC8A3', labelBg: '#FFE8D9', labelText: '#9E3E00' }],
+      ['nexon', '넥슨 다크골드', '게이밍/이벤트', '#FFC600', { bg: '#121316', isDark: true, cardBg: '#1B1D22', boxBg: '#191B20', boxBorder: '#59480D', labelBg: '#3D3106', labelText: '#FFE985', badgeBg: '#FFC600', badgeText: '#111111' }],
+      ['nvidia', '엔비디아 AI그린', 'AI/테크', '#76B900', { bg: '#111312', isDark: true, cardBg: '#1A1D1B', boxBg: '#171A18', boxBorder: '#3B5907', labelBg: '#2A4005', labelText: '#C9F279' }],
+      ['netlify', '네틀리파이 틸', '개발/클라우드', '#00AD9F', { bg: '#12181A', isDark: true, cardBg: '#192226', boxBg: '#171E21', boxBorder: '#16524D', labelBg: '#0E3B37', labelText: '#8EF7EE' }],
+      ['adot', '에이닷 인디고', 'AI/스마트', '#4C6EF5', { bg: '#FFFFFF', text: '#1A1A1A' }],
+      ['apple-hig', '애플 HIG 블루', '시스템/클린', '#007AFF', { bg: '#FFFFFF', text: '#1D1D1F', titleColor: '#1D1D1F', boxBg: '#F5F9FF', boxBorder: '#CCE4FF', labelBg: '#E5F1FF', labelText: '#004999' }],
+      ['spotify', '스포티파이 다크그린', '미디어/다크', '#1ED760', { bg: '#121212', isDark: true, cardBg: '#1C1C1C', boxBg: '#181A18', boxBorder: '#158F42', labelBg: '#0C4F28', labelText: '#CDF9DE' }],
+      ['duolingo', '듀오링고 그린', '학습/친근', '#58CC02', { bg: '#FFFFFF', titleColor: '#2B6100', uiAccent: '#46A302', boxBg: '#F2FCE9', boxBorder: '#C2EFA4', labelBg: '#E5F8D5', labelText: '#336107' }],
+      ['openai', '오픈AI 다크모노', 'AI/하이테크', '#10A37F', { bg: '#0D0D0D', isDark: true, cardBg: '#171717', boxBg: '#141414', boxBorder: '#2E2E2E', labelBg: '#11382E', labelText: '#9FF2DC' }]
+    ];
+    BRAND_PALETTE_SPECS.forEach(([k, n, t, a, o]) => makeBrandPalette(k, n, t, a, o));
+
+    // --- 4B. Curated Brand Lookbook Styles (70 Design Systems Ordered by Oppadu Gallery Popularity) ---
+    const LOOKBOOK_STYLES = [
+      // Oppadu Top 12 (Overall Popularity #1 ~ #12)
+      { id: 'lb-nintendo', cat: 'vivid', name: '#1 닌텐도 레드', desc: '선명한 레드 · 라운드 팝', theme: 'nintendo', frame: 'top-accent', surfaceStyle: 'elevated', font: 'font-pretendard', align: 'text-center', bulletStyle: 'check' },
+      { id: 'lb-toss', cat: 'modern', name: '#2 토스 클린 블루', desc: '소프트 입체 카드 · 라운드', theme: 'toss-blue', frame: 'card-elevated', surfaceStyle: 'elevated', font: 'font-pretendard', align: 'text-left', bulletStyle: 'check' },
+      { id: 'lb-samsung-pay', cat: 'public', name: '#3 삼성페이 로얄블루', desc: '상단 밴드 · 공식 핀테크', theme: 'samsung-pay', frame: 'header-band', surfaceStyle: 'elevated', font: 'font-pretendard', align: 'text-left', bulletStyle: 'check' },
+      { id: 'lb-ant-design', cat: 'modern', name: '#4 앤트 디자인 블루', desc: '구조적 엔터프라이즈 표준', theme: 'ant-design', frame: 'left-bar', surfaceStyle: 'classic', font: 'font-pretendard', align: 'text-left', bulletStyle: 'number' },
+      { id: 'lb-kakao-bank', cat: 'vivid', name: '#5 카카오뱅크 옐로우', desc: '친근한 옐로우 · 높은 주목도', theme: 'kakao-bank', frame: 'top-accent', surfaceStyle: 'elevated', font: 'font-pretendard', align: 'text-center', bulletStyle: 'check' },
+      { id: 'lb-naver-pay', cat: 'modern', name: '#6 네이버페이 그린', desc: '경쾌한 그린 · 직관 안내', theme: 'naver-pay', frame: 'card-elevated', surfaceStyle: 'elevated', font: 'font-pretendard', align: 'text-left', bulletStyle: 'check' },
+      { id: 'lb-hyundai', cat: 'editorial', name: '#7 현대카드 모노 엣지', desc: '직각 샤프 · 레드 포인트', theme: 'hyundai-black', frame: 'split-duotone', surfaceStyle: 'editorial', font: 'font-display', align: 'text-left', bulletStyle: 'arrow' },
+      { id: 'lb-kakao', cat: 'vivid', name: '#8 카카오 블랙&옐로우', desc: '고대비 시선집중 · 볼드', theme: 'kakao-yellow', frame: 'solid-bold', surfaceStyle: 'elevated', font: 'font-impact', align: 'text-center', bulletStyle: 'check' },
+      { id: 'lb-naver', cat: 'modern', name: '#9 네이버 프레시 그린', desc: '상단 헤더 밴드 · 명쾌한 안내', theme: 'naver-green', frame: 'header-band', surfaceStyle: 'elevated', font: 'font-pretendard', align: 'text-left', bulletStyle: 'arrow' },
+      { id: 'lb-atlassian', cat: 'public', name: '#10 아틀라시안 협업', desc: '블루 좌측 바 · 업무 공지', theme: 'atlassian', frame: 'left-bar', surfaceStyle: 'left-stripe', font: 'font-pretendard', align: 'text-left', bulletStyle: 'number' },
+      { id: 'lb-olive-young', cat: 'vivid', name: '#11 올리브영 라임팝', desc: '상쾌한 라임 · 행사/부스', theme: 'olive-young', frame: 'top-accent', surfaceStyle: 'elevated', font: 'font-pretendard', align: 'text-center', bulletStyle: 'check' },
+      { id: 'lb-chzzk', cat: 'dark', name: '#12 치지직 네온그린', desc: '다크 스튜디오 · 에메랄드 빛', theme: 'chzzk', frame: 'corner-accent', surfaceStyle: 'glass-glow', font: 'font-display', align: 'text-left', bulletStyle: 'arrow' },
+
+      // Oppadu Color-Tab Top Ranked (#13 ~ #64)
+      { id: 'lb-cloudflare', cat: 'modern', name: '#13 클라우드플레어', desc: '듀오톤 오렌지 · 인프라', theme: 'cloudflare', frame: 'split-duotone', surfaceStyle: 'classic', font: 'font-display', align: 'text-left', bulletStyle: 'arrow' },
+      { id: 'lb-baemin', cat: 'vivid', name: '#14 배민 2.0 민트 팝', desc: '청량한 민트 · 행사/웰컴', theme: 'baemin-mint', frame: 'header-band', surfaceStyle: 'elevated', font: 'font-pretendard', align: 'text-center', bulletStyle: 'check' },
+      { id: 'lb-google-material', cat: 'modern', name: '#15 구글 머티리얼3', desc: '바이올렛 카드 · 라운드', theme: 'google-material', frame: 'card-elevated', surfaceStyle: 'elevated', font: 'font-pretendard', align: 'text-left', bulletStyle: 'dot' },
+      { id: 'lb-seoul-my-soul', cat: 'public', name: '#16 서울마이소울 팝', desc: '활기찬 공공 축제 · 멀티컬러', theme: 'seoul-pop', frame: 'solid-bold', surfaceStyle: 'elevated', font: 'font-pretendard', align: 'text-center', bulletStyle: 'check' },
+      { id: 'lb-netflix', cat: 'dark', name: '#17 넷플릭스 시네마', desc: '블랙 캔버스 · 레드 포인트', theme: 'netflix', frame: 'top-accent', surfaceStyle: 'glass-glow', font: 'font-display', align: 'text-left', bulletStyle: 'arrow' },
+      { id: 'lb-daangn', cat: 'vivid', name: '#18 당근마켓 웜오렌지', desc: '친근한 오렌지 · 지역 안내', theme: 'daangn', frame: 'card-elevated', surfaceStyle: 'elevated', font: 'font-pretendard', align: 'text-center', bulletStyle: 'check' },
+      { id: 'lb-hana-bank', cat: 'public', name: '#19 하나은행 틸클래식', desc: '안정감 있는 청록 · 더블라인', theme: 'hana-bank', frame: 'double-line', surfaceStyle: 'classic', font: 'font-pretendard', align: 'text-center', bulletStyle: 'number' },
+      { id: 'lb-kurly', cat: 'vivid', name: '#20 컬리 로얄 퍼플', desc: '우아한 보라 · 세미나/초청', theme: 'kurly-purple', frame: 'top-accent', surfaceStyle: 'elevated', font: 'font-pretendard', align: 'text-center', bulletStyle: 'dot' },
+      { id: 'lb-zigzag', cat: 'vivid', name: '#21 지그재그 마젠타', desc: '선명한 핑크 · 이벤트 안내', theme: 'zigzag', frame: 'solid-bold', surfaceStyle: 'elevated', font: 'font-display', align: 'text-center', bulletStyle: 'check' },
+      { id: 'lb-musinsa', cat: 'editorial', name: '#22 무신사 모노', desc: '강렬한 블랙 · 에디토리얼', theme: 'musinsa', frame: 'solid-bold', surfaceStyle: 'editorial', font: 'font-display', align: 'text-left', bulletStyle: 'number' },
+      { id: 'lb-stibee', cat: 'vivid', name: '#23 스티비 코랄', desc: '코랄 레드 바 · 뉴스레터형', theme: 'stibee', frame: 'left-bar', surfaceStyle: 'left-stripe', font: 'font-pretendard', align: 'text-left', bulletStyle: 'dot' },
+      { id: 'lb-grafana', cat: 'dark', name: '#24 그라파나 옵스', desc: '다크 대시보드 · 오렌지 글로우', theme: 'grafana', frame: 'corner-accent', surfaceStyle: 'glass-glow', font: 'font-display', align: 'text-left', bulletStyle: 'arrow' },
+      { id: 'lb-airtable', cat: 'modern', name: '#25 에어테이블 골드', desc: '명쾌한 옐로우 · 협업 보드', theme: 'airtable', frame: 'card-elevated', surfaceStyle: 'elevated', font: 'font-pretendard', align: 'text-left', bulletStyle: 'check' },
+      { id: 'lb-tiffany', cat: 'editorial', name: '#26 티파니 민트클래식', desc: '더블 라인 · 고급 초청장', theme: 'tiffany', frame: 'double-line', surfaceStyle: 'classic', font: 'font-serif', align: 'text-center', bulletStyle: 'dot' },
+      { id: 'lb-cu', cat: 'vivid', name: '#27 CU 퍼플밴드', desc: '경쾌한 퍼플 헤더 · 생활 안내', theme: 'cu-purple', frame: 'header-band', surfaceStyle: 'elevated', font: 'font-pretendard', align: 'text-center', bulletStyle: 'check' },
+      { id: 'lb-yogiyo', cat: 'vivid', name: '#28 요기요 핫핑크', desc: '시선집중 핑크 · 프로모션', theme: 'yogiyo', frame: 'card-elevated', surfaceStyle: 'elevated', font: 'font-pretendard', align: 'text-center', bulletStyle: 'check' },
+      { id: 'lb-kia', cat: 'editorial', name: '#29 기아 미드나잇', desc: '딥블랙 모던 · 직각 미니멀', theme: 'kia-midnight', frame: 'none', surfaceStyle: 'editorial', font: 'font-display', align: 'text-left', bulletStyle: 'arrow' },
+      { id: 'lb-lg', cat: 'modern', name: '#30 LG 액티브레드', desc: '깔끔한 레드 포인트 · 안내판', theme: 'lg-red', frame: 'top-accent', surfaceStyle: 'classic', font: 'font-pretendard', align: 'text-left', bulletStyle: 'check' },
+      { id: 'lb-aesop', cat: 'editorial', name: '#31 이솝 어스 베이지', desc: '모서리 브래킷 · 감성 명조', theme: 'aesop-earth', frame: 'corner-accent', surfaceStyle: 'editorial', font: 'font-myeongjo', align: 'text-left', bulletStyle: 'dot' },
+      { id: 'lb-kakao-pay', cat: 'vivid', name: '#32 카카오페이', desc: '옐로우 탑바 · 간편 안내', theme: 'kakao-pay', frame: 'top-accent', surfaceStyle: 'elevated', font: 'font-pretendard', align: 'text-left', bulletStyle: 'check' },
+      { id: 'lb-perplexity', cat: 'modern', name: '#33 퍼플렉시티 틸', desc: '따뜻한 페이퍼 · 청록 지성미', theme: 'perplexity', frame: 'corner-accent', surfaceStyle: 'classic', font: 'font-serif', align: 'text-left', bulletStyle: 'dot' },
+      { id: 'lb-canva', cat: 'vivid', name: '#34 캔바 바이올렛', desc: '크리에이티브 퍼플 · 워크숍', theme: 'canva-violet', frame: 'card-elevated', surfaceStyle: 'elevated', font: 'font-pretendard', align: 'text-center', bulletStyle: 'check' },
+      { id: 'lb-bilibili', cat: 'vivid', name: '#35 빌리빌리 핑크', desc: '부드러운 로즈 · 커뮤니티', theme: 'bilibili-pink', frame: 'card-elevated', surfaceStyle: 'elevated', font: 'font-pretendard', align: 'text-center', bulletStyle: 'dot' },
+      { id: 'lb-gentle-monster', cat: 'editorial', name: '#36 젠틀몬스터', desc: '전시 아방가르드 · 코너 프레임', theme: 'gentle-monster', frame: 'corner-accent', surfaceStyle: 'editorial', font: 'font-display', align: 'text-left', bulletStyle: 'arrow' },
+      { id: 'lb-kt', cat: 'modern', name: '#37 KT 레드엣지', desc: '상하 듀오톤 · 명쾌한 공지', theme: 'kt-red', frame: 'split-duotone', surfaceStyle: 'left-stripe', font: 'font-pretendard', align: 'text-left', bulletStyle: 'arrow' },
+      { id: 'lb-class101', cat: 'vivid', name: '#38 클래스101 오렌지', desc: '활기찬 강의 · 좌측 바', theme: 'class101', frame: 'left-bar', surfaceStyle: 'elevated', font: 'font-pretendard', align: 'text-left', bulletStyle: 'check' },
+      { id: 'lb-kb', cat: 'public', name: '#39 KB 스타골드', desc: '신뢰의 골드 밴드 · 공식', theme: 'kb-yellow', frame: 'header-band', surfaceStyle: 'classic', font: 'font-pretendard', align: 'text-left', bulletStyle: 'number' },
+      { id: 'lb-ms-excel', cat: 'public', name: '#40 MS 엑셀 그린', desc: '그린 좌측 바 · 실무 연수', theme: 'ms-excel', frame: 'left-bar', surfaceStyle: 'left-stripe', font: 'font-pretendard', align: 'text-left', bulletStyle: 'number' },
+      { id: 'lb-deliveroo', cat: 'vivid', name: '#41 딜리버루 시안', desc: '청량한 민트 헤더 · 웰컴', theme: 'deliveroo', frame: 'header-band', surfaceStyle: 'elevated', font: 'font-pretendard', align: 'text-center', bulletStyle: 'check' },
+      { id: 'lb-hyundai-motor', cat: 'public', name: '#42 현대차 딥네이비', desc: '샌드 베이지 · 격조 높은 안내', theme: 'hyundai-motor', frame: 'double-line', surfaceStyle: 'classic', font: 'font-pretendard', align: 'text-center', bulletStyle: 'number' },
+      { id: 'lb-sk-telecom', cat: 'modern', name: '#43 SKT 인디고', desc: '테크 인디고 밴드 · 컨퍼런스', theme: 'sk-telecom', frame: 'header-band', surfaceStyle: 'elevated', font: 'font-pretendard', align: 'text-left', bulletStyle: 'arrow' },
+      { id: 'lb-instagram', cat: 'vivid', name: '#44 인스타그램 로즈', desc: '비비드 로즈 · 포토존/행사', theme: 'instagram', frame: 'card-elevated', surfaceStyle: 'elevated', font: 'font-pretendard', align: 'text-center', bulletStyle: 'dot' },
+      { id: 'lb-amorepacific', cat: 'editorial', name: '#45 아모레퍼시픽', desc: '절제된 화이트 · 세리프 품격', theme: 'amorepacific', frame: 'double-line', surfaceStyle: 'editorial', font: 'font-serif', align: 'text-center', bulletStyle: 'dot' },
+      { id: 'lb-sungsimdang', cat: 'editorial', name: '#46 성심당 헤리티지', desc: '크림 한지 · 클래식 레드', theme: 'sungsimdang', frame: 'double-line', surfaceStyle: 'classic', font: 'font-myeongjo', align: 'text-center', bulletStyle: 'dot' },
+      { id: 'lb-anthropic', cat: 'editorial', name: '#47 클로드 웜 세리프', desc: '앤트로픽 크림 · 명조체 품격', theme: 'anthropic-cream', frame: 'double-line', surfaceStyle: 'classic', font: 'font-serif', align: 'text-center', bulletStyle: 'dot' },
+      { id: 'lb-kakao-t', cat: 'modern', name: '#48 카카오T 이동안내', desc: '명확한 방향 · 옐로우 탑바', theme: 'kakao-t', frame: 'top-accent', surfaceStyle: 'elevated', font: 'font-pretendard', align: 'text-left', bulletStyle: 'arrow' },
+      { id: 'lb-starbucks', cat: 'editorial', name: '#49 스타벅스 리저브', desc: '딥그린 라운지 · 더블 라인', theme: 'starbucks', frame: 'double-line', surfaceStyle: 'classic', font: 'font-serif', align: 'text-center', bulletStyle: 'dot' },
+      { id: 'lb-disney-plus', cat: 'dark', name: '#50 디즈니+ 시안글로우', desc: '미드나잇 블루 · 시안 네온', theme: 'disney-plus', frame: 'card-elevated', surfaceStyle: 'glass-glow', font: 'font-display', align: 'text-center', bulletStyle: 'check' },
+      { id: 'lb-shinhan-sol', cat: 'public', name: '#51 신한 쏠 블루', desc: '깔끔한 공공·금융 신뢰감', theme: 'shinhan-sol', frame: 'top-accent', surfaceStyle: 'elevated', font: 'font-pretendard', align: 'text-left', bulletStyle: 'check' },
+      { id: 'lb-obsidian', cat: 'dark', name: '#52 옵시디언 바이올렛', desc: '다크 지식포럼 · 코너 브래킷', theme: 'obsidian', frame: 'corner-accent', surfaceStyle: 'glass-glow', font: 'font-pretendard', align: 'text-left', bulletStyle: 'dot' },
+      { id: 'lb-yanolja', cat: 'vivid', name: '#53 야놀자 마젠타', desc: '경쾌한 핑크 · 숙박/페스타', theme: 'yanolja', frame: 'card-elevated', surfaceStyle: 'elevated', font: 'font-pretendard', align: 'text-center', bulletStyle: 'check' },
+      { id: 'lb-29cm', cat: 'editorial', name: '#54 29CM 매거진 모노', desc: '볼드 흑백 · 에디토리얼 직각', theme: 'minimal', frame: 'solid-bold', surfaceStyle: 'editorial', font: 'font-display', align: 'text-left', bulletStyle: 'number' },
+      { id: 'lb-yeogi-eottae', cat: 'vivid', name: '#55 여기어때 레드', desc: '선명한 코랄 · 체크인 안내', theme: 'yeogi-eottae', frame: 'header-band', surfaceStyle: 'elevated', font: 'font-pretendard', align: 'text-center', bulletStyle: 'check' },
+      { id: 'lb-zigbang', cat: 'vivid', name: '#56 직방 브라이트오렌지', desc: '상단 오렌지 바 · 시설 안내', theme: 'zigbang', frame: 'top-accent', surfaceStyle: 'elevated', font: 'font-pretendard', align: 'text-left', bulletStyle: 'arrow' },
+      { id: 'lb-nexon', cat: 'dark', name: '#57 넥슨 다크골드', desc: '다크 스틸 · 옐로우 엣지', theme: 'nexon', frame: 'solid-bold', surfaceStyle: 'glass-glow', font: 'font-display', align: 'text-center', bulletStyle: 'arrow' },
+      { id: 'lb-nvidia', cat: 'dark', name: '#58 엔비디아 AI그린', desc: '다크 AI 컨퍼런스 · 네온 바', theme: 'nvidia', frame: 'left-bar', surfaceStyle: 'glass-glow', font: 'font-display', align: 'text-left', bulletStyle: 'arrow' },
+      { id: 'lb-netlify', cat: 'dark', name: '#59 네틀리파이 틸', desc: '개발자 포럼 · 코너 글로우', theme: 'netlify', frame: 'corner-accent', surfaceStyle: 'glass-glow', font: 'font-display', align: 'text-left', bulletStyle: 'arrow' },
+      { id: 'lb-adot', cat: 'modern', name: '#60 에이닷 인디고', desc: 'AI 비서 · 부드러운 라운드', theme: 'adot', frame: 'card-elevated', surfaceStyle: 'elevated', font: 'font-pretendard', align: 'text-left', bulletStyle: 'check' },
+
+      // Global Top Favorites & Curated Public/Classic Systems (#61 ~ #70)
+      { id: 'lb-apple-hig', cat: 'modern', name: '#61 애플 HIG 클린', desc: '정제된 여백 · SF 시스템 블루', theme: 'apple-hig', frame: 'card-elevated', surfaceStyle: 'elevated', font: 'font-pretendard', align: 'text-left', bulletStyle: 'check' },
+      { id: 'lb-spotify', cat: 'dark', name: '#62 스포티파이 다크', desc: '블랙&그린 · 공연/문화행사', theme: 'spotify', frame: 'card-elevated', surfaceStyle: 'glass-glow', font: 'font-display', align: 'text-left', bulletStyle: 'dot' },
+      { id: 'lb-duolingo', cat: 'vivid', name: '#63 듀오링고 그린', desc: '생기 있는 그린 · 학생/연수', theme: 'duolingo', frame: 'solid-bold', surfaceStyle: 'elevated', font: 'font-pretendard', align: 'text-center', bulletStyle: 'check' },
+      { id: 'lb-openai', cat: 'dark', name: '#64 오픈AI 모노다크', desc: '딥차콜 · 미니멀 AI 포럼', theme: 'openai', frame: 'corner-accent', surfaceStyle: 'glass-glow', font: 'font-display', align: 'text-left', bulletStyle: 'arrow' },
+      { id: 'lb-krds', cat: 'public', name: '#65 KRDS 공공 표준', desc: '정부 청색 · 좌측 강조 바', theme: 'krds-public', frame: 'left-bar', surfaceStyle: 'left-stripe', font: 'font-pretendard', align: 'text-left', bulletStyle: 'check' },
+      { id: 'lb-ebs', cat: 'public', name: '#66 EBS 아카데미', desc: '상하 듀오톤 · 교육/특강', theme: 'ebs-navy', frame: 'split-duotone', surfaceStyle: 'classic', font: 'font-pretendard', align: 'text-center', bulletStyle: 'number' },
+      { id: 'lb-notion', cat: 'modern', name: '#67 노션 페이퍼', desc: '따뜻한 종이 · 좌측 라인', theme: 'notion-paper', frame: 'none', surfaceStyle: 'left-stripe', font: 'font-pretendard', align: 'text-left', bulletStyle: 'dot' },
+      { id: 'lb-sulwhasoo', cat: 'editorial', name: '#68 설화수 한지 골드', desc: '귀빈 초청 · 전통 고전미', theme: 'sulwhasoo-gold', frame: 'double-line', surfaceStyle: 'classic', font: 'font-batang', align: 'text-center', bulletStyle: 'dot' },
+      { id: 'lb-toss-dark', cat: 'dark', name: '#69 토스 다크 네온', desc: 'OLED 다크 · 블루 글로우', theme: 'toss-dark', frame: 'card-elevated', surfaceStyle: 'glass-glow', font: 'font-pretendard', align: 'text-left', bulletStyle: 'arrow' },
+      { id: 'lb-linear-dark', cat: 'dark', name: '#70 리니어 다크 인디고', desc: '정밀 IT 포럼 · 다크 글래스', theme: 'linear-dark', frame: 'corner-accent', surfaceStyle: 'glass-glow', font: 'font-display', align: 'text-left', bulletStyle: 'arrow' },
+      { id: 'lb-royal', cat: 'public', name: '#71 공식 연수 블루', desc: '더블 라인 · 클래식 균형', theme: 'royal-blue', frame: 'double-line', surfaceStyle: 'classic', font: 'font-pretendard', align: 'text-center', bulletStyle: 'check' }
     ];
 
     let activeLookbookCat = 'all';
+    let activeLookbookQuery = '';
 
     function renderThemeSelector() {
       if (!dom.themeGrid) return;
+      const entries = Object.entries(THEME_PALETTES);
+      if (dom.paletteCountLabel) {
+        dom.paletteCountLabel.textContent = `개별 색상 팔레트 (${entries.length}종)`;
+      }
       dom.themeGrid.innerHTML = '';
-      Object.entries(THEME_PALETTES).forEach(([key, pal]) => {
+      entries.forEach(([key, pal]) => {
         const btn = document.createElement('button');
         btn.type = 'button';
         btn.className = 'theme-choice-btn text-left p-1.5 rounded-lg border text-xs transition bg-white hover:bg-slate-50';
@@ -2048,11 +2191,35 @@
       updateThemeSelectorButtons();
     }
 
-    function renderLookbookStyles(cat = activeLookbookCat) {
+    function renderLookbookStyles(cat = activeLookbookCat, query = activeLookbookQuery) {
       if (!dom.lookbookGrid) return;
       activeLookbookCat = cat;
+      activeLookbookQuery = query;
+      const q = (query || '').trim().toLowerCase();
+      const filtered = LOOKBOOK_STYLES.filter(s => {
+        if (cat !== 'all' && s.cat !== cat) return false;
+        if (!q) return true;
+        const pal = THEME_PALETTES[s.theme] || {};
+        const hay = `${s.name} ${s.desc} ${s.id} ${pal.name || ''} ${pal.tag || ''}`.toLowerCase();
+        return hay.includes(q);
+      });
+
+      if (dom.lookbookCountBadge) {
+        dom.lookbookCountBadge.textContent = (cat === 'all' && !q)
+          ? `${LOOKBOOK_STYLES.length}종`
+          : `${filtered.length} / ${LOOKBOOK_STYLES.length}종`;
+      }
+      if (dom.btnGotoLookbook) {
+        dom.btnGotoLookbook.textContent = `🎨 스타일 룩북(${LOOKBOOK_STYLES.length}종) →`;
+      }
+
       dom.lookbookGrid.innerHTML = '';
-      const filtered = cat === 'all' ? LOOKBOOK_STYLES : LOOKBOOK_STYLES.filter(s => s.cat === cat);
+      if (filtered.length === 0) {
+        dom.lookbookGrid.innerHTML = '<div class="col-span-2 py-6 text-center text-[11px] text-slate-400">검색 조건에 맞는 브랜드 스타일이 없습니다.</div>';
+        updateThemeSelectorButtons();
+        return;
+      }
+
       filtered.forEach(style => {
         const pal = THEME_PALETTES[style.theme] || THEME_PALETTES['royal-blue'];
         const btn = document.createElement('button');
@@ -3017,7 +3184,7 @@
         });
       }
 
-      // Lookbook Category Filter Pills
+      // Lookbook Category Filter & Search
       if (dom.lookbookFilterBar) {
         dom.lookbookFilterBar.querySelectorAll('.lookbook-filter-btn').forEach(btn => {
           btn.addEventListener('click', () => {
@@ -3026,8 +3193,13 @@
               b.className = 'lookbook-filter-btn px-2 py-0.5 rounded-full text-[10px] font-semibold bg-white text-slate-600 border border-slate-200 hover:bg-slate-100 transition';
             });
             btn.className = 'lookbook-filter-btn px-2 py-0.5 rounded-full text-[10px] font-bold bg-slate-900 text-white transition';
-            renderLookbookStyles(cat);
+            renderLookbookStyles(cat, activeLookbookQuery);
           });
+        });
+      }
+      if (dom.inputLookbookSearch) {
+        dom.inputLookbookSearch.addEventListener('input', (e) => {
+          renderLookbookStyles(activeLookbookCat, e.target.value || '');
         });
       }
 
