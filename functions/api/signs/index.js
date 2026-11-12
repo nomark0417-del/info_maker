@@ -86,10 +86,18 @@ export async function onRequestPost(context) {
     );
   }
 
+  let body;
+  try {
+    body = await context.request.json();
+  } catch {
+    return new Response(
+      JSON.stringify({ ok: false, error: "올바른 JSON 요청 본문이 아닙니다." }),
+      { status: 400, headers: CORS_HEADERS }
+    );
+  }
+
   try {
     await ensureSchema(db);
-
-    const body = await context.request.json();
     const now = new Date().toISOString();
     const id = (body.id && String(body.id).trim()) || `sign_${Date.now()}_${Math.random().toString(36).slice(2, 6)}`;
     const title = (body.title && String(body.title).trim()) || '제목 없는 안내판';

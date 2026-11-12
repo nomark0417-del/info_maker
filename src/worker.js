@@ -34,12 +34,24 @@ function getFallbackD1() {
         },
         async all() {
           let list = [...memoryRows.values()];
+          let paramIdx = 0;
           if (normalized.includes('category = ?')) {
-            const cat = boundParams[0];
+            const cat = boundParams[paramIdx++];
             list = list.filter(r => r.category === cat);
           }
+          if (normalized.includes('title LIKE ?')) {
+            const rawLike = String(boundParams[paramIdx++] || '');
+            paramIdx++; // skip second LIKE param (memo LIKE ?)
+            const keyword = rawLike.replace(/^%|%$/g, '').toLowerCase();
+            if (keyword) {
+              list = list.filter(r =>
+                (r.title || '').toLowerCase().includes(keyword) ||
+                (r.memo || '').toLowerCase().includes(keyword)
+              );
+            }
+          }
           list.sort((a, b) => (b.updated_at || '').localeCompare(a.updated_at || ''));
-          return { results: list };
+          return { results: list.slice(0, 200) };
         },
         async first() {
           const [id] = boundParams;
@@ -83,4 +95,3 @@ export default {
     return new Response('Not Found', { status: 404 });
   }
 };
-

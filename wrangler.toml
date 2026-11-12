@@ -1,6 +1,10 @@
-name = "a4-signboard-studio"
+name = "info-maker"
+main = "src/worker.js"
 compatibility_date = "2024-11-01"
-pages_build_output_dir = "public"
+
+[assets]
+directory = "./public"
+binding = "ASSETS"
 
 [[d1_databases]]
 binding = "DB"

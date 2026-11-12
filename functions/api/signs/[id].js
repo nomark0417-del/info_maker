@@ -10,6 +10,21 @@ const CORS_HEADERS = {
   'Access-Control-Allow-Headers': 'Content-Type'
 };
 
+async function ensureSchema(db) {
+  await db.prepare(`
+    CREATE TABLE IF NOT EXISTS signs (
+      id TEXT PRIMARY KEY,
+      title TEXT NOT NULL,
+      category TEXT NOT NULL DEFAULT '연수안내',
+      memo TEXT NOT NULL DEFAULT '',
+      orientation TEXT NOT NULL DEFAULT 'portrait',
+      state_json TEXT NOT NULL,
+      created_at TEXT NOT NULL DEFAULT (strftime('%Y-%m-%dT%H:%M:%fZ', 'now')),
+      updated_at TEXT NOT NULL DEFAULT (strftime('%Y-%m-%dT%H:%M:%fZ', 'now'))
+    )
+  `).run();
+}
+
 export async function onRequestOptions() {
   return new Response(null, { status: 204, headers: CORS_HEADERS });
 }
@@ -25,6 +40,7 @@ export async function onRequestGet(context) {
   }
 
   try {
+    await ensureSchema(db);
     const item = await db
       .prepare(`SELECT id, title, category, memo, orientation, state_json, created_at, updated_at FROM signs WHERE id = ?`)
       .bind(id)
@@ -59,8 +75,18 @@ export async function onRequestPut(context) {
     );
   }
 
+  let body;
   try {
-    const body = await context.request.json();
+    body = await context.request.json();
+  } catch {
+    return new Response(
+      JSON.stringify({ ok: false, error: '올바른 JSON 요청 본문이 아닙니다.' }),
+      { status: 400, headers: CORS_HEADERS }
+    );
+  }
+
+  try {
+    await ensureSchema(db);
     const now = new Date().toISOString();
     const title = (body.title && String(body.title).trim()) || '제목 없는 안내판';
     const category = (body.category && String(body.category).trim()) || '연수안내';
@@ -109,6 +135,7 @@ export async function onRequestDelete(context) {
   }
 
   try {
+    await ensureSchema(db);
     await db.prepare(`DELETE FROM signs WHERE id = ?`).bind(id).run();
     return new Response(
       JSON.stringify({ ok: true, deletedId: id }),

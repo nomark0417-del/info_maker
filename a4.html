@@ -1435,6 +1435,16 @@
       toastIcon: document.getElementById('toast-icon')
     };
 
+    // --- HTML Escape Helper ---
+    function escapeHtml(str) {
+      return String(str ?? "")
+        .replace(/&/g, "&amp;")
+        .replace(/</g, "&lt;")
+        .replace(/>/g, "&gt;")
+        .replace(/"/g, "&quot;")
+        .replace(/'/g, "&#39;");
+    }
+
     // --- Toast Helper ---
     let toastTimeout = null;
     function showToast(text, icon = '✅') {
@@ -1579,7 +1589,7 @@
         row.className = 'flex items-center gap-1';
         row.innerHTML = `
           <span class="text-[11px] font-bold text-slate-400 w-4 text-center">${index + 1}</span>
-          <input type="text" class="bullet-input flex-1 text-xs px-2.5 py-1.5 rounded border border-slate-300 focus:border-amber-500 outline-none" value="${bulletText.replace(/"/g, '&quot;')}" placeholder="세부 안내 내용 입력">
+          <input type="text" class="bullet-input flex-1 text-xs px-2.5 py-1.5 rounded border border-slate-300 focus:border-amber-500 outline-none" value="${escapeHtml(bulletText)}" placeholder="세부 안내 내용 입력">
           <button type="button" class="btn-up-bullet text-slate-400 hover:text-slate-700 p-1 rounded hover:bg-slate-100 text-[10px]" title="위로 이동" ${index === 0 ? 'disabled' : ''}>▲</button>
           <button type="button" class="btn-down-bullet text-slate-400 hover:text-slate-700 p-1 rounded hover:bg-slate-100 text-[10px]" title="아래로 이동" ${index === state.bullets.length - 1 ? 'disabled' : ''}>▼</button>
           <button type="button" class="btn-remove-bullet text-slate-400 hover:text-rose-500 p-1 rounded hover:bg-rose-50 transition" title="항목 삭제">✕</button>
@@ -1872,10 +1882,10 @@
           rowEl.style.fontSize = `${state.infoSize}px`;
           rowEl.innerHTML = `
             <div class="col-span-3 px-3 py-2.5 font-extrabold flex items-center justify-center text-center tracking-wider" style="background-color:${palette.labelBg};color:${palette.labelText}">
-              ${r.label || '항목'}
+              ${escapeHtml(r.label || '항목')}
             </div>
             <div class="col-span-9 px-4 py-2.5 font-semibold flex items-center break-keep" style="color:${palette.text}">
-              ${r.value}
+              ${escapeHtml(r.value)}
             </div>
           `;
           dom.infoRows.appendChild(rowEl);
@@ -1912,7 +1922,7 @@
             markerHtml = `<span class="mt-2 w-2 h-2 rounded-full shrink-0" style="background-color:${palette.accent}"></span>`;
           }
 
-          li.innerHTML = `${markerHtml}<span class="break-keep">${bText}</span>`;
+          li.innerHTML = `${markerHtml}<span class="break-keep">${escapeHtml(bText)}</span>`;
           dom.bulletsList.appendChild(li);
         });
       } else {
@@ -1977,6 +1987,8 @@
     function applyFrameStyles(frame, palette) {
       const fo = dom.frameOverlay;
       fo.innerHTML = '';
+      fo.style.border = '';
+      fo.style.padding = '';
       fo.style.backgroundImage = '';
       fo.style.backgroundClip = '';
       fo.style.borderColor = '';
@@ -2109,23 +2121,30 @@
       saveLocalVault();
 
       // Sync to Cloudflare D1 API if available
+      let cloudSyncFailed = false;
       if (isCloudApiConnected) {
         try {
           const method = (!asNew && existingIdx >= 0) ? 'PUT' : 'POST';
           const url = method === 'PUT' ? `/api/signs/${encodeURIComponent(targetId)}` : '/api/signs';
-          await fetch(url, {
+          const res = await fetch(url, {
             method,
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify(record)
           });
+          if (!res.ok) throw new Error(`HTTP ${res.status}`);
         } catch (err) {
+          cloudSyncFailed = true;
           console.warn('Cloud sync fallback to local:', err);
         }
       }
 
       syncControlsFromState();
       renderVaultList();
-      showToast(asNew ? '보관함에 새 안내판으로 저장되었습니다!' : '수정된 내용이 기존 안내판에 덮어쓰기 저장되었습니다!');
+      if (cloudSyncFailed) {
+        showToast('로컬에는 저장되었으나 클라우드 DB 동기화에 실패했습니다.', '⚠️');
+      } else {
+        showToast(asNew ? '보관함에 새 안내판으로 저장되었습니다!' : '수정된 내용이 기존 안내판에 덮어쓰기 저장되었습니다!');
+      }
     }
 
     async function deleteSignFromVault(id) {
@@ -2176,12 +2195,12 @@
           <div class="flex items-start justify-between gap-2">
             <div class="min-w-0 flex-1">
               <div class="flex items-center gap-1.5 mb-1">
-                <span class="text-[10px] font-bold px-2 py-0.5 rounded bg-slate-100 text-slate-700">${item.category || '일반'}</span>
+                <span class="text-[10px] font-bold px-2 py-0.5 rounded bg-slate-100 text-slate-700">${escapeHtml(item.category || '일반')}</span>
                 <span class="text-[10px] text-slate-400">${item.orientation === 'landscape' ? '가로형' : '세로형'}</span>
                 ${isCurrent ? '<span class="text-[10px] font-bold text-indigo-600">● 현재 편집 중</span>' : ''}
               </div>
-              <h4 class="text-xs font-bold text-slate-900 truncate">${item.title || '제목 없음'}</h4>
-              ${item.memo ? `<p class="text-[11px] text-slate-500 truncate mt-0.5">${item.memo}</p>` : ''}
+              <h4 class="text-xs font-bold text-slate-900 truncate">${escapeHtml(item.title || '제목 없음')}</h4>
+              ${item.memo ? `<p class="text-[11px] text-slate-500 truncate mt-0.5">${escapeHtml(item.memo)}</p>` : ''}
               <p class="text-[10px] text-slate-400 mt-1">수정: ${dateStr}</p>
             </div>
             <div class="flex flex-col gap-1 shrink-0">
@@ -2338,13 +2357,26 @@
         showToast(`'${currentRecommendation.tag}' 추천 디자인이 적용되었습니다!`);
       });
 
+      function resetScalePresetButtons() {
+        document.querySelectorAll('.scale-preset-btn').forEach(b => {
+          const isDefault = b.getAttribute('data-scale') === '1';
+          b.className = isDefault
+            ? 'scale-preset-btn py-1.5 text-xs font-bold rounded-lg border border-amber-500 bg-amber-50 text-amber-900 transition'
+            : 'scale-preset-btn py-1.5 text-xs font-semibold rounded-lg border border-slate-300 bg-white hover:bg-slate-100 transition';
+        });
+      }
+
       // Blank Reset
       dom.btnResetBlank.addEventListener('click', () => {
         state.id = null;
+        state.memo = '';
         state.badge = '안내 / NOTICE';
         state.title = '안내 제목을 입력하세요';
         state.subtitle = '보조 설명 문구를 입력하세요.';
         state.showInfoCard = false;
+        state.showIcon = true;
+        state.stampText = '';
+        state.showQr = false;
         state.bullets = ['세부 안내 사항 1'];
         syncControlsFromState();
         renderSignboard();
@@ -2360,7 +2392,12 @@
           const p = PRESETS[key];
           if (!p) return;
           state.id = null; // New draft from preset
+          state.memo = '';
+          state.showIcon = true;
+          state.stampText = '';
+          state.showQr = false;
           Object.assign(state, DEFAULT_TYPO, JSON.parse(JSON.stringify(p)));
+          resetScalePresetButtons();
           syncControlsFromState();
           syncInputsToState();
           renderVaultList();
@@ -2443,6 +2480,7 @@
       // Reset Typography
       dom.btnResetTypography.addEventListener('click', () => {
         Object.assign(state, DEFAULT_TYPO);
+        resetScalePresetButtons();
         syncControlsFromState();
         renderSignboard();
         pushHistory();
@@ -2545,14 +2583,18 @@
         reader.onload = (ev) => {
           try {
             const imported = JSON.parse(ev.target.result);
-            if (Array.isArray(imported)) {
+            if (Array.isArray(imported) && imported.every(item => item && typeof item === 'object' && typeof item.id === 'string')) {
               vaultRecords = imported;
               saveLocalVault();
               renderVaultList();
               showToast(`${imported.length}개의 안내판 목록을 복원했습니다!`);
+            } else {
+              showToast('보관함 백업 형식과 일치하지 않는 JSON 파일입니다.', '❌');
             }
           } catch (err) {
             showToast('올바른 JSON 파일이 아닙니다.', '❌');
+          } finally {
+            e.target.value = '';
           }
         };
         reader.readAsText(file);
@@ -2567,7 +2609,10 @@
       dom.btnExportPng.addEventListener('click', () => {
         showToast('고해상도 PNG 이미지를 생성하고 있습니다...', '⏳');
         const prevTransform = dom.zoomStage.style.transform;
+        const prevTransition = dom.zoomStage.style.transition;
+        dom.zoomStage.style.transition = 'none';
         dom.zoomStage.style.transform = 'none';
+        void dom.zoomStage.offsetWidth;
 
         html2canvas(dom.wrapper, {
           scale: 3,
@@ -2576,6 +2621,7 @@
           logging: false
         }).then(canvas => {
           dom.zoomStage.style.transform = prevTransform;
+          dom.zoomStage.style.transition = prevTransition;
           const link = document.createElement('a');
           const safeTitle = (state.title || '안내판').replace(/[\r\n\/\\?%*:|"<>]/g, '_').slice(0, 24);
           link.download = `A4_${state.orientation === 'landscape' ? '가로' : '세로'}_${safeTitle}.png`;
@@ -2584,6 +2630,7 @@
           showToast('고해상도 PNG 파일 저장이 완료되었습니다!');
         }).catch(err => {
           dom.zoomStage.style.transform = prevTransform;
+          dom.zoomStage.style.transition = prevTransition;
           console.error(err);
           showToast('이미지 저장 중 오류가 발생했습니다.', '❌');
         });
