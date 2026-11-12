@@ -2364,10 +2364,13 @@
       const footerBorderColor = isDark ? 'rgba(255, 255, 255, 0.16)' : 'rgba(148, 163, 184, 0.45)';
 
       if (isLandscape) {
+        if (dom.footer.firstElementChild !== dom.footerSpacer) {
+          dom.footer.insertBefore(dom.footerSpacer, dom.footerCenter);
+        }
         if (dom.footerMeta.parentElement !== dom.footerSpacer) {
           dom.footerSpacer.appendChild(dom.footerMeta);
         }
-        dom.footer.className = 'relative z-10 pt-3 mt-2 border-t flex items-center justify-between gap-4';
+        dom.footer.className = 'relative z-10 pt-3 mt-2 border-t flex flex-row items-center justify-between gap-4';
 
         if (hasLogo) {
           dom.footerSpacer.className = 'flex-1 min-w-0 flex items-center justify-start';
@@ -2385,19 +2388,36 @@
           dom.footerLeft.className = `flex flex-wrap items-center gap-x-2 gap-y-0.5 opacity-90 ${hasFooterActions ? 'justify-start' : 'justify-center'}`;
           dom.footerRight.className = `font-mono opacity-60 ${hasFooterActions ? 'text-left' : 'text-center'}`;
         }
-      } else {
+      } else if (!hasFooterActions) {
+        if (dom.footer.firstElementChild !== dom.footerSpacer) {
+          dom.footer.insertBefore(dom.footerSpacer, dom.footerCenter);
+        }
         if (dom.footerMeta.parentElement !== dom.footerCenter) {
           dom.footerCenter.appendChild(dom.footerMeta);
         }
-        const portraitWingClass = !hasFooterActions ? 'hidden' : (hasStamp && hasQr ? 'w-44 shrink-0' : 'w-24 shrink-0');
-        dom.footer.className = 'relative z-10 pt-4 mt-3 border-t flex items-center justify-between gap-4';
-        dom.footerSpacer.className = portraitWingClass;
-        dom.footerActions.className = hasFooterActions ? `${portraitWingClass} flex items-center justify-end gap-3` : 'hidden';
-        dom.footerCenter.className = 'flex-1 min-w-0 flex flex-col items-center justify-center text-center space-y-1';
+        dom.footer.className = 'relative z-10 pt-4 mt-3 border-t flex items-center justify-center gap-4';
+        dom.footerSpacer.className = 'hidden';
+        dom.footerActions.className = 'hidden';
+        dom.footerCenter.className = 'w-full flex flex-col items-center justify-center text-center space-y-1';
         dom.logoContainer.className = 'mb-1 flex justify-center items-center transition-all';
         dom.footerMeta.className = 'flex flex-col items-center text-center space-y-1 max-w-full';
         dom.footerLeft.className = 'flex flex-wrap items-center justify-center gap-2 opacity-90';
         dom.footerRight.className = 'font-mono opacity-60 text-center';
+      } else {
+        if (dom.footer.firstElementChild !== dom.footerCenter) {
+          dom.footer.insertBefore(dom.footerCenter, dom.footerSpacer);
+        }
+        if (dom.footerMeta.parentElement !== dom.footerSpacer) {
+          dom.footerSpacer.appendChild(dom.footerMeta);
+        }
+        dom.footer.className = 'relative z-10 pt-4 mt-3 border-t flex flex-wrap items-center justify-between gap-x-4 gap-y-2.5';
+        dom.footerCenter.className = hasLogo ? 'w-full flex justify-center items-center' : 'hidden';
+        dom.logoContainer.className = 'flex justify-center items-center transition-all shrink-0';
+        dom.footerSpacer.className = 'flex-1 min-w-0 flex items-center justify-start';
+        dom.footerActions.className = 'shrink-0 flex items-center justify-end gap-3';
+        dom.footerMeta.className = 'flex flex-col items-start text-left space-y-0.5 max-w-full';
+        dom.footerLeft.className = 'flex flex-wrap items-center justify-start gap-x-2 gap-y-0.5 opacity-90';
+        dom.footerRight.className = 'font-mono opacity-60 text-left';
       }
       dom.footer.style.borderColor = footerBorderColor;
 
