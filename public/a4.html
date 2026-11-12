@@ -228,9 +228,12 @@
 
         <!-- Quick Preset Buttons (Grouped: Work/Event first, then Facility) -->
         <div class="space-y-2">
-          <div class="flex items-center justify-between">
+          <div class="flex items-center justify-between gap-2">
             <label class="text-xs font-bold text-slate-800">⚡ 업무 · 행사 빠른 템플릿</label>
-            <button type="button" id="btn-reset-blank" class="text-[11px] text-slate-500 hover:text-slate-800 underline">빈 양식 초기화</button>
+            <div class="flex items-center gap-2.5">
+              <button type="button" id="btn-goto-lookbook" class="text-[11px] font-bold text-indigo-600 hover:text-indigo-800">🎨 스타일 룩북(16종) →</button>
+              <button type="button" id="btn-reset-blank" class="text-[11px] text-slate-500 hover:text-slate-800 underline">빈 양식 초기화</button>
+            </div>
           </div>
           <div class="flex flex-wrap gap-1.5">
             <button type="button" class="preset-btn text-xs px-2.5 py-1.5 rounded-lg bg-indigo-50 hover:bg-indigo-100 text-indigo-800 border border-indigo-200 font-semibold transition" data-preset="training">🎓 직무연수 안내</button>
@@ -238,8 +241,12 @@
             <button type="button" class="preset-btn text-xs px-2.5 py-1.5 rounded-lg bg-indigo-50 hover:bg-indigo-100 text-indigo-800 border border-indigo-200 font-semibold transition" data-preset="seminar">🎉 행사·세미나 안내</button>
             <button type="button" class="preset-btn text-xs px-2.5 py-1.5 rounded-lg bg-indigo-50 hover:bg-indigo-100 text-indigo-800 border border-indigo-200 font-semibold transition" data-preset="direction">➡️ 행사장 방향 안내</button>
             <button type="button" class="preset-btn text-xs px-2.5 py-1.5 rounded-lg bg-indigo-50 hover:bg-indigo-100 text-indigo-800 border border-indigo-200 font-semibold transition" data-preset="registration">📋 등록·접수처 안내</button>
+            <button type="button" class="preset-btn text-xs px-2.5 py-1.5 rounded-lg bg-indigo-50 hover:bg-indigo-100 text-indigo-800 border border-indigo-200 font-semibold transition" data-preset="notice">📢 공식 공고·모집</button>
+            <button type="button" class="preset-btn text-xs px-2.5 py-1.5 rounded-lg bg-indigo-50 hover:bg-indigo-100 text-indigo-800 border border-indigo-200 font-semibold transition" data-preset="tech">💻 AI·디지털 포럼</button>
           </div>
           <div class="flex flex-wrap gap-1.5 pt-0.5">
+            <button type="button" class="preset-btn text-[11px] px-2 py-1 rounded-md bg-slate-100 hover:bg-slate-200 text-slate-700 transition" data-preset="survey">📱 QR 설문·자료</button>
+            <button type="button" class="preset-btn text-[11px] px-2 py-1 rounded-md bg-slate-100 hover:bg-slate-200 text-slate-700 transition" data-preset="parking">🅿️ 주차·셔틀 안내</button>
             <button type="button" class="preset-btn text-[11px] px-2 py-1 rounded-md bg-slate-100 hover:bg-slate-200 text-slate-700 transition" data-preset="danger">🚨 출입금지</button>
             <button type="button" class="preset-btn text-[11px] px-2 py-1 rounded-md bg-slate-100 hover:bg-slate-200 text-slate-700 transition" data-preset="quiet">🤫 정숙 구역</button>
             <button type="button" class="preset-btn text-[11px] px-2 py-1 rounded-md bg-slate-100 hover:bg-slate-200 text-slate-700 transition" data-preset="cafe">☕ 와이파이 안내</button>
@@ -501,50 +508,67 @@
 
       <!-- TAB 3: DESIGN, THEME, ICON & QR -->
       <div id="tab-panel-design" class="tab-panel hidden p-4 sm:p-5 space-y-4">
-        <!-- Theme Selector (8 Themes) -->
+        <!-- Curated Brand Lookbook Styles (Keeps current text!) -->
+        <div class="p-3 rounded-xl bg-gradient-to-br from-slate-50 to-indigo-50/60 border border-slate-200 space-y-2.5">
+          <div class="flex items-center justify-between gap-2">
+            <div>
+              <label class="text-xs font-bold text-slate-900 flex items-center gap-1.5">
+                <span>🎨 디자인 룩북 스타일 갤러리</span>
+                <span class="text-[10px] font-bold px-1.5 py-0.5 rounded bg-indigo-100 text-indigo-700">16종</span>
+              </label>
+              <p class="text-[10px] text-slate-500 mt-0.5">입력한 문구는 유지한 채 색상·프레임·카드·서체 조합을 한 번에 바꿉니다.</p>
+            </div>
+          </div>
+          <div class="flex flex-wrap gap-1" id="lookbook-filter-bar">
+            <button type="button" class="lookbook-filter-btn px-2 py-0.5 rounded-full text-[10px] font-bold bg-slate-900 text-white transition" data-cat="all">전체</button>
+            <button type="button" class="lookbook-filter-btn px-2 py-0.5 rounded-full text-[10px] font-semibold bg-white text-slate-600 border border-slate-200 hover:bg-slate-100 transition" data-cat="public">공공·교육</button>
+            <button type="button" class="lookbook-filter-btn px-2 py-0.5 rounded-full text-[10px] font-semibold bg-white text-slate-600 border border-slate-200 hover:bg-slate-100 transition" data-cat="modern">모던·테크</button>
+            <button type="button" class="lookbook-filter-btn px-2 py-0.5 rounded-full text-[10px] font-semibold bg-white text-slate-600 border border-slate-200 hover:bg-slate-100 transition" data-cat="editorial">에디토리얼</button>
+            <button type="button" class="lookbook-filter-btn px-2 py-0.5 rounded-full text-[10px] font-semibold bg-white text-slate-600 border border-slate-200 hover:bg-slate-100 transition" data-cat="dark">다크모드</button>
+            <button type="button" class="lookbook-filter-btn px-2 py-0.5 rounded-full text-[10px] font-semibold bg-white text-slate-600 border border-slate-200 hover:bg-slate-100 transition" data-cat="vivid">감성·컬러</button>
+          </div>
+          <div class="grid grid-cols-2 gap-1.5 max-h-[220px] overflow-y-auto pr-0.5" id="lookbook-style-grid">
+            <!-- Populated dynamically via JS -->
+          </div>
+        </div>
+
+        <!-- Theme Selector (24 Themes) -->
         <div>
-          <label class="block text-xs font-bold text-slate-800 mb-2">감성 & 업무 테마 프리셋 (8종)</label>
-          <div class="grid grid-cols-4 gap-1.5" id="theme-selector-grid">
-            <button type="button" class="theme-choice-btn text-left p-2 rounded-lg border text-xs transition" data-theme="royal-blue">
-              <span class="block w-full h-2 rounded bg-blue-700 mb-1"></span>
-              <span class="font-bold block text-slate-800 text-[11px]">로얄 블루</span>
-              <span class="text-[10px] text-slate-500">연수/학술/기관</span>
-            </button>
-            <button type="button" class="theme-choice-btn text-left p-2 rounded-lg border text-xs transition" data-theme="formal">
-              <span class="block w-full h-2 rounded bg-slate-900 mb-1"></span>
-              <span class="font-bold block text-slate-800 text-[11px]">딥 네이비</span>
-              <span class="text-[10px] text-slate-500">협의회/공식회의</span>
-            </button>
-            <button type="button" class="theme-choice-btn text-left p-2 rounded-lg border text-xs transition" data-theme="purple-festa">
-              <span class="block w-full h-2 rounded bg-violet-700 mb-1"></span>
-              <span class="font-bold block text-slate-800 text-[11px]">로얄 퍼플</span>
-              <span class="text-[10px] text-slate-500">행사/세미나/특강</span>
-            </button>
-            <button type="button" class="theme-choice-btn text-left p-2 rounded-lg border text-xs transition" data-theme="eco">
-              <span class="block w-full h-2 rounded bg-emerald-700 mb-1"></span>
-              <span class="font-bold block text-slate-800 text-[11px]">포레스트 그린</span>
-              <span class="text-[10px] text-slate-500">생태/청렴/환경</span>
-            </button>
-            <button type="button" class="theme-choice-btn text-left p-2 rounded-lg border text-xs transition" data-theme="cafe">
-              <span class="block w-full h-2 rounded bg-amber-800 mb-1"></span>
-              <span class="font-bold block text-slate-800 text-[11px]">웜 클래식</span>
-              <span class="text-[10px] text-slate-500">다과/휴게/문화</span>
-            </button>
-            <button type="button" class="theme-choice-btn text-left p-2 rounded-lg border text-xs transition" data-theme="minimal">
-              <span class="block w-full h-2 rounded bg-neutral-900 mb-1"></span>
-              <span class="font-bold block text-slate-800 text-[11px]">모던 미니멀</span>
-              <span class="text-[10px] text-slate-500">전시/고급흑백</span>
-            </button>
-            <button type="button" class="theme-choice-btn text-left p-2 rounded-lg border text-xs transition" data-theme="danger">
-              <span class="block w-full h-2 rounded bg-amber-500 mb-1"></span>
-              <span class="font-bold block text-slate-800 text-[11px]">주의 / 경고</span>
-              <span class="text-[10px] text-slate-500">안전/시설점검</span>
-            </button>
-            <button type="button" class="theme-choice-btn text-left p-2 rounded-lg border text-xs transition" data-theme="red-alert">
-              <span class="block w-full h-2 rounded bg-rose-600 mb-1"></span>
-              <span class="font-bold block text-slate-800 text-[11px]">긴급 / 금지</span>
-              <span class="text-[10px] text-slate-500">통제/절대금지</span>
-            </button>
+          <div class="flex items-center justify-between mb-1.5">
+            <label class="text-xs font-bold text-slate-800">개별 색상 팔레트 (24종)</label>
+            <span class="text-[10px] text-slate-400">색상만 단독 변경</span>
+          </div>
+          <div class="grid grid-cols-3 sm:grid-cols-4 gap-1.5 max-h-[185px] overflow-y-auto pr-0.5" id="theme-selector-grid">
+            <!-- Populated dynamically via JS -->
+          </div>
+        </div>
+
+        <!-- Surface & Frame Style Selectors -->
+        <div class="grid grid-cols-1 sm:grid-cols-2 gap-2.5">
+          <div>
+            <label for="select-surface" class="block text-xs font-bold text-slate-800 mb-1">카드 · 뱃지 표면 스타일</label>
+            <select id="select-surface" class="w-full text-xs px-2.5 py-2 rounded-lg border border-slate-300 bg-white font-medium">
+              <option value="classic">표준 라운드 (균형잡힌 기본형)</option>
+              <option value="elevated">소프트 입체 카드 (토스·모던앱형)</option>
+              <option value="editorial">에디토리얼 샤프 (현대카드·29CM형)</option>
+              <option value="left-stripe">좌측 강조 라인 (KRDS·문서형)</option>
+              <option value="glass-glow">네온 글로우 (다크·하이테크형)</option>
+            </select>
+          </div>
+          <div>
+            <label for="select-frame" class="block text-xs font-bold text-slate-800 mb-1">외곽 테두리 프레임 (10종)</label>
+            <select id="select-frame" class="w-full text-xs px-2.5 py-2 rounded-lg border border-slate-300 bg-white font-medium">
+              <option value="double-line">더블 라인 프레임 (공식 표준)</option>
+              <option value="left-bar">좌측 컬러 바 (에디토리얼/공공)</option>
+              <option value="split-duotone">상하 듀오톤 밴드 (가로형 최적화)</option>
+              <option value="header-band">상단 헤더 컬러 밴드 (매거진형)</option>
+              <option value="card-elevated">모던 라운딩 프레임 (소프트 앱형)</option>
+              <option value="solid-bold">볼드 솔리드 프레임 (명확한 경계)</option>
+              <option value="corner-accent">모서리 코너 브래킷 (세미나/방향)</option>
+              <option value="top-accent">상단 컬러 바 강조 (현대 공문형)</option>
+              <option value="hazard-stripe">안전 해저드 스트라이프 (점검/통제)</option>
+              <option value="none">테두리 없음 (미니멀 플랫)</option>
+            </select>
           </div>
         </div>
 
@@ -566,19 +590,6 @@
               <!-- Populated via JS -->
             </div>
           </div>
-        </div>
-
-        <!-- Border Frame Style -->
-        <div>
-          <label for="select-frame" class="block text-xs font-bold text-slate-800 mb-1">외곽 테두리 프레임</label>
-          <select id="select-frame" class="w-full text-xs px-3 py-2 rounded-lg border border-slate-300 bg-white font-medium">
-            <option value="double-line">더블 라인 프레임 (공식 행사 · 연수 · 회의 표준)</option>
-            <option value="solid-bold">볼드 솔리드 프레임 (명확한 경계 강조)</option>
-            <option value="corner-accent">모서리 코너 브래킷 (모던 세미나 · 방향 안내)</option>
-            <option value="top-accent">상단 컬러 바 강조 (깔끔한 현대 공문형)</option>
-            <option value="hazard-stripe">안전 해저드 스트라이프 (산업 · 점검 · 출입통제)</option>
-            <option value="none">테두리 없음 (미니멀 플랫)</option>
-          </select>
         </div>
 
         <hr class="border-slate-200">
@@ -900,6 +911,8 @@
       showLogo: true,
       logoHeight: 28,
       theme: 'royal-blue',
+      surfaceStyle: 'classic',
+      lookbookId: '',
       showIcon: true,
       icon: 'graduation-cap',
       font: 'font-pretendard',
@@ -1201,12 +1214,127 @@
         footerOrg: '친환경운영위원회',
         footerContact: '그린캠페인팀',
         theme: 'eco',
+        surfaceStyle: 'classic',
         icon: 'leaf',
         font: 'font-pretendard',
         align: 'text-center',
         frame: 'corner-accent',
         iconSize: 64,
         titleSize: 38
+      },
+      notice: {
+        category: '일반안내',
+        orientation: 'landscape',
+        badge: 'OFFICIAL NOTICE / 공식 공고',
+        title: '2026년 하반기 참가자 모집 및 접수 공고',
+        subtitle: '관심 있는 분들의 적극적인 참여를 바라며, 신청 기한 및 제출 서류를 반드시 확인해 주시기 바랍니다.',
+        showInfoCard: true,
+        infoRows: [
+          { label: '접수기간', value: `${nowDateStr} ~ 14일간 (18:00 마감)` },
+          { label: '신청대상', value: '관내 교직원 및 업무 관련 희망자' },
+          { label: '접수방법', value: '온라인 신청서 제출 또는 공문 회신' }
+        ],
+        bullets: [
+          '선착순 접수 마감 시 별도 대기 명단으로 전환될 수 있습니다',
+          '선정 결과는 접수 마감 후 3일 이내 개별 문자로 안내됩니다',
+          '문의 사항은 담당 부서 내선 번호로 연락 바랍니다'
+        ],
+        bulletStyle: 'number',
+        footerOrg: '행정지원과',
+        footerContact: '모집운영팀 (내선 210번)',
+        theme: 'krds-public',
+        surfaceStyle: 'left-stripe',
+        icon: 'clipboard-check',
+        font: 'font-pretendard',
+        align: 'text-left',
+        frame: 'left-bar',
+        iconSize: 60,
+        titleSize: 38
+      },
+      tech: {
+        category: '행사안내',
+        orientation: 'landscape',
+        badge: 'TECH FORUM 2026 / AI · 디지털 특강',
+        title: 'AI 기반 미래 교육 디지털 전환 포럼',
+        subtitle: '생성형 AI 활용 실무 사례와 에듀테크 혁신 전략을 공유하는 차세대 컨퍼런스입니다.',
+        showInfoCard: true,
+        infoRows: [
+          { label: '일 시', value: `${nowDateStr} 14:00 ~ 17:30` },
+          { label: '장 소', value: '미래관 B1 스마트컨벤션홀' },
+          { label: '트 랙', value: 'Keynote · AI 실무 워크숍 · Live Demo' }
+        ],
+        bullets: [
+          '현장 실습을 위해 개인 노트북 또는 태블릿 지참을 권장합니다',
+          '전용 고속 Wi-Fi 및 실습 계정은 입장 시 배부해 드립니다',
+          '발표 자료 및 프롬프트 가이드는 포럼 종료 후 QR로 다운로드 가능합니다'
+        ],
+        bulletStyle: 'arrow',
+        footerOrg: '디지털혁신추진단',
+        footerContact: 'AI포럼사무국',
+        theme: 'toss-dark',
+        surfaceStyle: 'glass-glow',
+        icon: 'sparkles',
+        font: 'font-display',
+        align: 'text-left',
+        frame: 'card-elevated',
+        iconSize: 64,
+        titleSize: 40
+      },
+      survey: {
+        category: '연수안내',
+        orientation: 'landscape',
+        badge: 'MOBILE GUIDE / QR 자료 및 설문',
+        title: '연수 자료 다운로드 및 만족도 설문 안내',
+        subtitle: '종이 인쇄물을 줄이고 편리하게 자료를 확인하실 수 있도록 모바일 QR 서비스를 제공합니다.',
+        showInfoCard: true,
+        infoRows: [
+          { label: '제공자료', value: '강의안 PDF · 참고 서식 · 만족도 조사' },
+          { label: '참여방법', value: '스마트폰 카메라로 우측 하단 QR 스캔' }
+        ],
+        bullets: [
+          '설문 응답 완료 시 이수 확인 및 수료 처리가 자동 연동됩니다',
+          '자료 열람이 원활하지 않을 경우 현장 진행 요원에게 말씀해 주세요'
+        ],
+        bulletStyle: 'check',
+        footerOrg: '연수운영지원팀',
+        footerContact: '현장 데스크 문의',
+        theme: 'toss-blue',
+        surfaceStyle: 'elevated',
+        icon: 'eye',
+        font: 'font-pretendard',
+        align: 'text-center',
+        frame: 'card-elevated',
+        iconSize: 60,
+        titleSize: 38,
+        showQr: true,
+        qrLabel: '자료집 · 설문 QR'
+      },
+      parking: {
+        category: '방향안내',
+        orientation: 'landscape',
+        badge: 'PARKING & SHUTTLE / 주차 안내',
+        title: '방문자 임시 주차장 및 셔틀 이동 안내 →',
+        subtitle: '원활한 행사 진행을 위해 본관 전면 주차장 대신 지정된 임시 주차 구역을 이용해 주시기 바랍니다.',
+        showInfoCard: true,
+        infoRows: [
+          { label: '주차구역', value: '별관 뒤편 제2주차장 (무료 주차권 배부)' },
+          { label: '도보이동', value: '별관 통로 이용 도보 3분 (안내 표지 참조)' }
+        ],
+        bullets: [
+          '대중교통 이용을 적극 권장드리며, 카풀 이용 시 우선 주차 구역 안내',
+          '등록 데스크에서 차량 번호를 말씀하시면 주차 할인 등록을 해드립니다'
+        ],
+        bulletStyle: 'arrow',
+        footerOrg: '시설운영지원팀',
+        footerContact: '주차안내실 (내선 119)',
+        theme: 'hyundai-black',
+        surfaceStyle: 'editorial',
+        icon: 'parking',
+        font: 'font-display',
+        align: 'text-left',
+        frame: 'split-duotone',
+        iconSize: 72,
+        titleSize: 40
       }
     };
 
@@ -1407,6 +1535,11 @@
       valCanvasPadding: document.getElementById('val-canvas-padding'),
 
       // Design Controls
+      btnGotoLookbook: document.getElementById('btn-goto-lookbook'),
+      lookbookFilterBar: document.getElementById('lookbook-filter-bar'),
+      lookbookGrid: document.getElementById('lookbook-style-grid'),
+      themeGrid: document.getElementById('theme-selector-grid'),
+      selectSurface: document.getElementById('select-surface'),
       selectFrame: document.getElementById('select-frame'),
       toggleHideIcon: document.getElementById('toggle-hide-icon'),
       iconControlsWrapper: document.getElementById('icon-controls-wrapper'),
@@ -1497,6 +1630,7 @@
 
       dom.selectFont.value = state.font || 'font-pretendard';
       dom.selectAlign.value = state.align || 'text-center';
+      if (dom.selectSurface) dom.selectSurface.value = state.surfaceStyle || 'classic';
       dom.selectFrame.value = state.frame || 'double-line';
 
       // Sliders & Labels
@@ -1644,7 +1778,7 @@
         dom.bulletItemsContainer.appendChild(row);
       });
     }
-    // --- 3. Theme Selector Active State ---
+    // --- 3. Theme & Lookbook Style Selectors ---
     function updateThemeSelectorButtons() {
       document.querySelectorAll('.theme-choice-btn').forEach(btn => {
         const theme = btn.getAttribute('data-theme');
@@ -1656,123 +1790,302 @@
           btn.classList.add('border-slate-200');
         }
       });
+      document.querySelectorAll('.lookbook-card-btn').forEach(btn => {
+        const id = btn.getAttribute('data-lookbook');
+        if (id && id === state.lookbookId) {
+          btn.classList.add('border-indigo-500', 'bg-indigo-50/80', 'ring-2', 'ring-indigo-500/30');
+          btn.classList.remove('border-slate-200', 'bg-white');
+        } else {
+          btn.classList.remove('border-indigo-500', 'bg-indigo-50/80', 'ring-2', 'ring-indigo-500/30');
+          btn.classList.add('border-slate-200', 'bg-white');
+        }
+      });
     }
 
-    // --- 4. Theme Palette Definitions ---
+    // --- 4. Theme Palette Definitions (24 Palettes, incl. Brand Lookbook & Dark Modes) ---
     const THEME_PALETTES = {
       'royal-blue': {
-        bg: '#f8faff',
-        text: '#0f172a',
-        titleColor: '#1e3a8a',
-        subtitleColor: '#334155',
-        accent: '#1d4ed8',
-        badgeBg: '#1d4ed8',
-        badgeText: '#ffffff',
-        badgeBorder: '#1e40af',
-        boxBg: 'rgba(219, 234, 254, 0.55)',
-        boxBorder: '#bfdbfe',
-        labelBg: '#dbeafe',
-        labelText: '#1e3a8a'
+        name: '로얄 블루', tag: '연수/학술/기관', swatch: '#1d4ed8',
+        bg: '#f8faff', cardBg: '#ffffff', text: '#0f172a', titleColor: '#1e3a8a', subtitleColor: '#334155',
+        accent: '#1d4ed8', badgeBg: '#1d4ed8', badgeText: '#ffffff', badgeBorder: '#1e40af',
+        boxBg: 'rgba(219, 234, 254, 0.55)', boxBorder: '#bfdbfe', labelBg: '#dbeafe', labelText: '#1e3a8a'
       },
       'formal': {
-        bg: '#f8fafc',
-        text: '#0f172a',
-        titleColor: '#0f172a',
-        subtitleColor: '#475569',
-        accent: '#1e293b',
-        badgeBg: '#0f172a',
-        badgeText: '#ffffff',
-        badgeBorder: '#1e293b',
-        boxBg: 'rgba(226, 232, 240, 0.55)',
-        boxBorder: '#cbd5e1',
-        labelBg: '#e2e8f0',
-        labelText: '#0f172a'
+        name: '딥 네이비', tag: '협의회/공식', swatch: '#0f172a',
+        bg: '#f8fafc', cardBg: '#ffffff', text: '#0f172a', titleColor: '#0f172a', subtitleColor: '#475569',
+        accent: '#1e293b', badgeBg: '#0f172a', badgeText: '#ffffff', badgeBorder: '#1e293b',
+        boxBg: 'rgba(226, 232, 240, 0.55)', boxBorder: '#cbd5e1', labelBg: '#e2e8f0', labelText: '#0f172a'
       },
-      'purple-festa': {
-        bg: '#faf5ff',
-        text: '#1e1b4b',
-        titleColor: '#4c1d95',
-        subtitleColor: '#4338ca',
-        accent: '#6d28d9',
-        badgeBg: '#6d28d9',
-        badgeText: '#ffffff',
-        badgeBorder: '#5b21b6',
-        boxBg: 'rgba(237, 233, 254, 0.6)',
-        boxBorder: '#ddd6fe',
-        labelBg: '#ede9fe',
-        labelText: '#4c1d95'
+      'krds-public': {
+        name: 'KRDS 공공청색', tag: '정부/공문표준', swatch: '#0B50D0',
+        bg: '#F4F7FB', cardBg: '#ffffff', text: '#111827', titleColor: '#03163A', subtitleColor: '#334155',
+        accent: '#0B50D0', badgeBg: '#0B50D0', badgeText: '#ffffff', badgeBorder: '#083891',
+        boxBg: '#ECF2FE', boxBorder: '#B1CEFB', labelBg: '#D8E5FD', labelText: '#052561'
       },
-      'eco': {
-        bg: '#f0fdf4',
-        text: '#14532d',
-        titleColor: '#064e3b',
-        subtitleColor: '#166534',
-        accent: '#047857',
-        badgeBg: '#047857',
-        badgeText: '#ffffff',
-        badgeBorder: '#065f46',
-        boxBg: 'rgba(209, 250, 229, 0.6)',
-        boxBorder: '#a7f3d0',
-        labelBg: '#d1fae5',
-        labelText: '#065f46'
+      'ebs-navy': {
+        name: '아카데미 네이비', tag: '교육/방송/특강', swatch: '#102E68',
+        bg: '#FFFFFF', cardBg: '#FFFFFF', text: '#202020', titleColor: '#102E68', subtitleColor: '#3D3D3D',
+        accent: '#1A6FB8', badgeBg: '#102E68', badgeText: '#ffffff', badgeBorder: '#102E68',
+        boxBg: '#F3F5FA', boxBorder: '#D5DEEF', labelBg: '#E4EAF8', labelText: '#102E68'
       },
-      'cafe': {
-        bg: '#fdfbf7',
-        text: '#38281d',
-        titleColor: '#451a03',
-        subtitleColor: '#78350f',
-        accent: '#92400e',
-        badgeBg: '#78350f',
-        badgeText: '#fffbeb',
-        badgeBorder: '#92400e',
-        boxBg: 'rgba(254, 243, 199, 0.5)',
-        boxBorder: '#fde68a',
-        labelBg: '#fef3c7',
-        labelText: '#78350f'
+      'toss-blue': {
+        name: '토스 클린블루', tag: '모던/핀테크', swatch: '#0064FF',
+        bg: '#FFFFFF', cardBg: '#FFFFFF', text: '#202632', titleColor: '#191F28', subtitleColor: '#4E5968',
+        accent: '#0064FF', badgeBg: '#E8F3FF', badgeText: '#1B64DA', badgeBorder: '#C9E2FF',
+        boxBg: '#F4F8FF', boxBorder: '#D8E8FF', labelBg: '#E8F3FF', labelText: '#194AA6'
+      },
+      'toss-dark': {
+        name: '토스 다크네온', tag: '다크/IT/포럼', swatch: '#4795FF', isDark: true,
+        bg: '#0F1115', cardBg: '#171A21', text: '#E5E8EB', titleColor: '#FFFFFF', subtitleColor: '#B0B8C1',
+        accent: '#4795FF', badgeBg: '#133E84', badgeText: '#C2DCFF', badgeBorder: '#2C77DF',
+        boxBg: '#151922', boxBorder: '#263248', labelBg: '#0E2B5C', labelText: '#97C6FF'
+      },
+      'linear-dark': {
+        name: '리니어 다크', tag: '다크/프리미엄', swatch: '#5E6AD2', isDark: true,
+        bg: '#0D0F14', cardBg: '#151822', text: '#E2E4EC', titleColor: '#F7F8F8', subtitleColor: '#9CA3AF',
+        accent: '#7A81E8', badgeBg: '#2F3570', badgeText: '#DEDFFA', badgeBorder: '#5E6AD2',
+        boxBg: '#141720', boxBorder: '#292E45', labelBg: '#1F2350', labelText: '#BCC0F4'
+      },
+      'hyundai-black': {
+        name: '현대카드 모노', tag: '모노/레드포인트', swatch: '#000000',
+        bg: '#FAFAFA', cardBg: '#FFFFFF', text: '#1A1A1A', titleColor: '#000000', subtitleColor: '#555555',
+        accent: '#DA0011', badgeBg: '#000000', badgeText: '#FFFFFF', badgeBorder: '#000000',
+        boxBg: '#F5F5F5', boxBorder: '#D4D4D4', labelBg: '#1A1A1A', labelText: '#FFFFFF'
       },
       'minimal': {
-        bg: '#ffffff',
-        text: '#171717',
-        titleColor: '#0a0a0a',
-        subtitleColor: '#525252',
-        accent: '#171717',
-        badgeBg: '#f5f5f5',
-        badgeText: '#171717',
-        badgeBorder: '#d4d4d4',
-        boxBg: '#fafafa',
-        boxBorder: '#e5e5e5',
-        labelBg: '#f5f5f5',
-        labelText: '#171717'
+        name: '모던 미니멀', tag: '전시/고급흑백', swatch: '#171717',
+        bg: '#ffffff', cardBg: '#ffffff', text: '#171717', titleColor: '#0a0a0a', subtitleColor: '#525252',
+        accent: '#171717', badgeBg: '#f5f5f5', badgeText: '#171717', badgeBorder: '#d4d4d4',
+        boxBg: '#fafafa', boxBorder: '#e5e5e5', labelBg: '#f5f5f5', labelText: '#171717'
+      },
+      'anthropic-cream': {
+        name: '앤트로픽 크림', tag: '인문/따뜻한톤', swatch: '#CC785C',
+        bg: '#F0EEE6', cardBg: '#FAF9F5', text: '#2B2926', titleColor: '#1C1B19', subtitleColor: '#57534E',
+        accent: '#CC785C', badgeBg: '#CC785C', badgeText: '#FFFFFF', badgeBorder: '#B26349',
+        boxBg: '#FAF9F5', boxBorder: '#E4E1D7', labelBg: '#F4DCD0', labelText: '#663828'
+      },
+      'aesop-earth': {
+        name: '이솝 베이지', tag: '전시/아포테카리', swatch: '#8C6230',
+        bg: '#F7F1E7', cardBg: '#FCF9F3', text: '#332310', titleColor: '#2B1D0D', subtitleColor: '#6E4C25',
+        accent: '#8C6230', badgeBg: '#4F371B', badgeText: '#F7F1E7', badgeBorder: '#4F371B',
+        boxBg: '#FBF7EF', boxBorder: '#DBC194', labelBg: '#EBDCC2', labelText: '#332310'
+      },
+      'sulwhasoo-gold': {
+        name: '설화수 골드', tag: '품격/한지/귀빈', swatch: '#A6802A',
+        bg: '#FBF8F1', cardBg: '#FFFFFF', text: '#3A342E', titleColor: '#33260A', subtitleColor: '#6B4A2E',
+        accent: '#A6802A', badgeBg: '#513C10', badgeText: '#F7F1E3', badgeBorder: '#8C6A20',
+        boxBg: '#F7F1E3', boxBorder: '#DBC48A', labelBg: '#EBDDBC', labelText: '#513C10'
+      },
+      'notion-paper': {
+        name: '노션 페이퍼', tag: '워크스페이스/문서', swatch: '#37352F',
+        bg: '#F4F4F2', cardBg: '#FFFFFF', text: '#37352F', titleColor: '#191918', subtitleColor: '#6F6E69',
+        accent: '#2383E2', badgeBg: '#EAE9E5', badgeText: '#37352F', badgeBorder: '#D4D2CC',
+        boxBg: '#FFFFFF', boxBorder: '#DFDDD7', labelBg: '#EAE9E5', labelText: '#37352F'
+      },
+      'naver-green': {
+        name: '네이버 그린', tag: '산뜻/실용/안내', swatch: '#03C75A',
+        bg: '#FFFFFF', cardBg: '#FFFFFF', text: '#222222', titleColor: '#015D26', subtitleColor: '#4B5563',
+        accent: '#03C75A', badgeBg: '#03C75A', badgeText: '#FFFFFF', badgeBorder: '#02A848',
+        boxBg: '#F2FCF6', boxBorder: '#B2EFD0', labelBg: '#E0F8EC', labelText: '#015D26'
+      },
+      'eco': {
+        name: '포레스트 그린', tag: '생태/청렴/환경', swatch: '#047857',
+        bg: '#f0fdf4', cardBg: '#ffffff', text: '#14532d', titleColor: '#064e3b', subtitleColor: '#166534',
+        accent: '#047857', badgeBg: '#047857', badgeText: '#ffffff', badgeBorder: '#065f46',
+        boxBg: 'rgba(209, 250, 229, 0.6)', boxBorder: '#a7f3d0', labelBg: '#d1fae5', labelText: '#065f46'
+      },
+      'baemin-mint': {
+        name: '배민 2.0 민트', tag: '경쾌/청량/행사', swatch: '#00CDB7',
+        bg: '#FFFFFF', cardBg: '#FFFFFF', text: '#1F2937', titleColor: '#07574F', subtitleColor: '#4B5563',
+        accent: '#00A590', badgeBg: '#0CEFD3', badgeText: '#07574F', badgeBorder: '#00CDB7',
+        boxBg: '#E8FFFB', boxBorder: '#93FDEC', labelBg: '#C5FFF5', labelText: '#07574F'
+      },
+      'kakao-yellow': {
+        name: '카카오 옐로우', tag: '친근/시선집중', swatch: '#FEE500',
+        bg: '#FFFFFF', cardBg: '#FFFFFF', text: '#191919', titleColor: '#111111', subtitleColor: '#4B5563',
+        accent: '#191919', badgeBg: '#FFE500', badgeText: '#191919', badgeBorder: '#E6CE00',
+        boxBg: '#FFFDE6', boxBorder: '#F5E56B', labelBg: '#FFF580', labelText: '#191919'
+      },
+      'cafe': {
+        name: '웜 클래식', tag: '다과/휴게/문화', swatch: '#92400e',
+        bg: '#fdfbf7', cardBg: '#ffffff', text: '#38281d', titleColor: '#451a03', subtitleColor: '#78350f',
+        accent: '#92400e', badgeBg: '#78350f', badgeText: '#fffbeb', badgeBorder: '#92400e',
+        boxBg: 'rgba(254, 243, 199, 0.5)', boxBorder: '#fde68a', labelBg: '#fef3c7', labelText: '#78350f'
+      },
+      'purple-festa': {
+        name: '로얄 퍼플', tag: '행사/세미나/특강', swatch: '#6d28d9',
+        bg: '#faf5ff', cardBg: '#ffffff', text: '#1e1b4b', titleColor: '#4c1d95', subtitleColor: '#4338ca',
+        accent: '#6d28d9', badgeBg: '#6d28d9', badgeText: '#ffffff', badgeBorder: '#5b21b6',
+        boxBg: 'rgba(237, 233, 254, 0.6)', boxBorder: '#ddd6fe', labelBg: '#ede9fe', labelText: '#4c1d95'
+      },
+      'kurly-purple': {
+        name: '컬리 딥퍼플', tag: '프리미엄/초청', swatch: '#5F0080',
+        bg: '#FFFFFF', cardBg: '#FFFFFF', text: '#191919', titleColor: '#3D0053', subtitleColor: '#555555',
+        accent: '#5F0080', badgeBg: '#5F0080', badgeText: '#FFFFFF', badgeBorder: '#4F006B',
+        boxBg: '#FAF5FC', boxBorder: '#E0B8EC', labelBg: '#F4E5F8', labelText: '#3D0053'
+      },
+      'airbnb-coral': {
+        name: '에어비앤비 코랄', tag: '환영/페스티벌', swatch: '#FF385C',
+        bg: '#FFFFFF', cardBg: '#FFFFFF', text: '#222222', titleColor: '#222222', subtitleColor: '#595959',
+        accent: '#FF385C', badgeBg: '#FF385C', badgeText: '#FFFFFF', badgeBorder: '#E61E4D',
+        boxBg: '#FFF5F7', boxBorder: '#FECDD6', labelBg: '#FFE4EA', labelText: '#8C1A48'
+      },
+      'seoul-pop': {
+        name: '서울 컬러 팝', tag: '축제/캠페인', swatch: '#FF0A73',
+        bg: '#FFFDF7', cardBg: '#FFFFFF', text: '#111827', titleColor: '#111827', subtitleColor: '#4B5563',
+        accent: '#FF0A73', badgeBg: '#FABF13', badgeText: '#111827', badgeBorder: '#000000',
+        boxBg: '#FFF1F6', boxBorder: '#FBCFE8', labelBg: '#0082FF', labelText: '#FFFFFF'
       },
       'danger': {
-        bg: '#fffbeb',
-        text: '#1c1917',
-        titleColor: '#451a03',
-        subtitleColor: '#78350f',
-        accent: '#d97706',
-        badgeBg: '#fbbf24',
-        badgeText: '#09090b',
-        badgeBorder: '#f59e0b',
-        boxBg: 'rgba(254, 243, 199, 0.75)',
-        boxBorder: '#fcd34d',
-        labelBg: '#fde68a',
-        labelText: '#78350f'
+        name: '주의 / 경고', tag: '안전/시설점검', swatch: '#d97706',
+        bg: '#fffbeb', cardBg: '#ffffff', text: '#1c1917', titleColor: '#451a03', subtitleColor: '#78350f',
+        accent: '#d97706', badgeBg: '#fbbf24', badgeText: '#09090b', badgeBorder: '#f59e0b',
+        boxBg: 'rgba(254, 243, 199, 0.75)', boxBorder: '#fcd34d', labelBg: '#fde68a', labelText: '#78350f'
       },
       'red-alert': {
-        bg: '#fff1f2',
-        text: '#1f2937',
-        titleColor: '#be123c',
-        subtitleColor: '#374151',
-        accent: '#e11d48',
-        badgeBg: '#e11d48',
-        badgeText: '#ffffff',
-        badgeBorder: '#be123c',
-        boxBg: 'rgba(255, 228, 230, 0.65)',
-        boxBorder: '#fecdd3',
-        labelBg: '#ffe4e6',
-        labelText: '#9f1239'
+        name: '긴급 / 금지', tag: '통제/절대금지', swatch: '#e11d48',
+        bg: '#fff1f2', cardBg: '#ffffff', text: '#1f2937', titleColor: '#be123c', subtitleColor: '#374151',
+        accent: '#e11d48', badgeBg: '#e11d48', badgeText: '#ffffff', badgeBorder: '#be123c',
+        boxBg: 'rgba(255, 228, 230, 0.65)', boxBorder: '#fecdd3', labelBg: '#ffe4e6', labelText: '#9f1239'
       }
     };
+
+    // --- 4B. Curated Brand Lookbook Styles (16 Complete Visual Design Systems) ---
+    const LOOKBOOK_STYLES = [
+      {
+        id: 'lb-krds', cat: 'public', name: 'KRDS 공공 표준', desc: '정부 청색 · 좌측 강조 바',
+        theme: 'krds-public', frame: 'left-bar', surfaceStyle: 'left-stripe', font: 'font-pretendard', align: 'text-left', bulletStyle: 'check'
+      },
+      {
+        id: 'lb-ebs', cat: 'public', name: '아카데미 네이비', desc: 'EBS형 상단 듀오톤 · 학술',
+        theme: 'ebs-navy', frame: 'split-duotone', surfaceStyle: 'classic', font: 'font-pretendard', align: 'text-center', bulletStyle: 'number'
+      },
+      {
+        id: 'lb-royal', cat: 'public', name: '공식 연수 블루', desc: '더블 라인 · 클래식 균형',
+        theme: 'royal-blue', frame: 'double-line', surfaceStyle: 'classic', font: 'font-pretendard', align: 'text-center', bulletStyle: 'check'
+      },
+      {
+        id: 'lb-toss', cat: 'modern', name: '토스 클린 블루', desc: '소프트 입체 카드 · 라운드',
+        theme: 'toss-blue', frame: 'card-elevated', surfaceStyle: 'elevated', font: 'font-pretendard', align: 'text-left', bulletStyle: 'check'
+      },
+      {
+        id: 'lb-naver', cat: 'modern', name: '네이버 프레시 그린', desc: '상단 헤더 밴드 · 명쾌한 안내',
+        theme: 'naver-green', frame: 'header-band', surfaceStyle: 'elevated', font: 'font-pretendard', align: 'text-left', bulletStyle: 'arrow'
+      },
+      {
+        id: 'lb-notion', cat: 'modern', name: '노션 페이퍼 미니멀', desc: '따뜻한 종이 · 좌측 라인',
+        theme: 'notion-paper', frame: 'none', surfaceStyle: 'left-stripe', font: 'font-pretendard', align: 'text-left', bulletStyle: 'dot'
+      },
+      {
+        id: 'lb-hyundai', cat: 'editorial', name: '현대카드 모노 엣지', desc: '직각 샤프 · 레드 포인트',
+        theme: 'hyundai-black', frame: 'split-duotone', surfaceStyle: 'editorial', font: 'font-display', align: 'text-left', bulletStyle: 'arrow'
+      },
+      {
+        id: 'lb-29cm', cat: 'editorial', name: '29CM 매거진 모노', desc: '볼드 흑백 · 에디토리얼 직각',
+        theme: 'minimal', frame: 'solid-bold', surfaceStyle: 'editorial', font: 'font-display', align: 'text-left', bulletStyle: 'number'
+      },
+      {
+        id: 'lb-anthropic', cat: 'editorial', name: '앤트로픽 웜 세리프', desc: '크림 캔버스 · 명조체 품격',
+        theme: 'anthropic-cream', frame: 'double-line', surfaceStyle: 'classic', font: 'font-serif', align: 'text-center', bulletStyle: 'dot'
+      },
+      {
+        id: 'lb-aesop', cat: 'editorial', name: '이솝 어스 베이지', desc: '모서리 브래킷 · 감성 명조',
+        theme: 'aesop-earth', frame: 'corner-accent', surfaceStyle: 'editorial', font: 'font-myeongjo', align: 'text-left', bulletStyle: 'dot'
+      },
+      {
+        id: 'lb-sulwhasoo', cat: 'editorial', name: '설화수 한지 골드', desc: '귀빈 초청 · 전통 고전미',
+        theme: 'sulwhasoo-gold', frame: 'double-line', surfaceStyle: 'classic', font: 'font-batang', align: 'text-center', bulletStyle: 'dot'
+      },
+      {
+        id: 'lb-toss-dark', cat: 'dark', name: '토스 다크 네온', desc: 'OLED 다크 · 블루 글로우',
+        theme: 'toss-dark', frame: 'card-elevated', surfaceStyle: 'glass-glow', font: 'font-pretendard', align: 'text-left', bulletStyle: 'arrow'
+      },
+      {
+        id: 'lb-linear-dark', cat: 'dark', name: '리니어 다크 인디고', desc: '정밀 IT 포럼 · 다크 글래스',
+        theme: 'linear-dark', frame: 'corner-accent', surfaceStyle: 'glass-glow', font: 'font-display', align: 'text-left', bulletStyle: 'arrow'
+      },
+      {
+        id: 'lb-kakao', cat: 'vivid', name: '카카오 블랙&옐로우', desc: '고대비 시선집중 · 볼드',
+        theme: 'kakao-yellow', frame: 'solid-bold', surfaceStyle: 'elevated', font: 'font-impact', align: 'text-center', bulletStyle: 'check'
+      },
+      {
+        id: 'lb-baemin', cat: 'vivid', name: '배민 2.0 민트 팝', desc: '청량한 민트 · 행사/웰컴',
+        theme: 'baemin-mint', frame: 'header-band', surfaceStyle: 'elevated', font: 'font-pretendard', align: 'text-center', bulletStyle: 'check'
+      },
+      {
+        id: 'lb-kurly', cat: 'vivid', name: '컬리 로얄 퍼플', desc: '우아한 보라 · 세미나/초청',
+        theme: 'kurly-purple', frame: 'top-accent', surfaceStyle: 'elevated', font: 'font-pretendard', align: 'text-center', bulletStyle: 'dot'
+      }
+    ];
+
+    let activeLookbookCat = 'all';
+
+    function renderThemeSelector() {
+      if (!dom.themeGrid) return;
+      dom.themeGrid.innerHTML = '';
+      Object.entries(THEME_PALETTES).forEach(([key, pal]) => {
+        const btn = document.createElement('button');
+        btn.type = 'button';
+        btn.className = 'theme-choice-btn text-left p-1.5 rounded-lg border text-xs transition bg-white hover:bg-slate-50';
+        btn.setAttribute('data-theme', key);
+        btn.innerHTML = `
+          <div class="flex gap-0.5 mb-1">
+            <span class="h-2 flex-1 rounded-l" style="background-color:${pal.bg};border:1px solid #cbd5e1"></span>
+            <span class="h-2 flex-[2]" style="background-color:${pal.swatch}"></span>
+            <span class="h-2 flex-1 rounded-r" style="background-color:${pal.badgeBg}"></span>
+          </div>
+          <span class="font-bold block text-slate-800 text-[10.5px] truncate">${escapeHtml(pal.name)}</span>
+          <span class="text-[9.5px] text-slate-500 block truncate">${escapeHtml(pal.tag)}</span>
+        `;
+        btn.addEventListener('click', () => {
+          state.theme = key;
+          state.lookbookId = '';
+          renderSignboard();
+          pushHistory();
+        });
+        dom.themeGrid.appendChild(btn);
+      });
+      updateThemeSelectorButtons();
+    }
+
+    function renderLookbookStyles(cat = activeLookbookCat) {
+      if (!dom.lookbookGrid) return;
+      activeLookbookCat = cat;
+      dom.lookbookGrid.innerHTML = '';
+      const filtered = cat === 'all' ? LOOKBOOK_STYLES : LOOKBOOK_STYLES.filter(s => s.cat === cat);
+      filtered.forEach(style => {
+        const pal = THEME_PALETTES[style.theme] || THEME_PALETTES['royal-blue'];
+        const btn = document.createElement('button');
+        btn.type = 'button';
+        btn.className = 'lookbook-card-btn text-left p-2 rounded-xl border border-slate-200 bg-white hover:border-indigo-300 transition flex flex-col gap-1.5 shadow-2xs';
+        btn.setAttribute('data-lookbook', style.id);
+        btn.innerHTML = `
+          <div class="w-full h-6 rounded-md overflow-hidden border border-slate-200 flex items-center justify-between px-2" style="background-color:${pal.bg}">
+            <span class="text-[9px] font-extrabold truncate" style="color:${pal.titleColor}">Aa 가나다</span>
+            <span class="px-1.5 py-0.5 rounded-full text-[8px] font-bold shrink-0" style="background-color:${pal.badgeBg};color:${pal.badgeText}">BADGE</span>
+          </div>
+          <div>
+            <div class="text-[11px] font-bold text-slate-900 truncate">${escapeHtml(style.name)}</div>
+            <div class="text-[10px] text-slate-500 truncate">${escapeHtml(style.desc)}</div>
+          </div>
+        `;
+        btn.addEventListener('click', () => {
+          state.theme = style.theme;
+          state.frame = style.frame;
+          state.surfaceStyle = style.surfaceStyle;
+          state.font = style.font;
+          state.align = style.align;
+          state.bulletStyle = style.bulletStyle;
+          state.lookbookId = style.id;
+          syncControlsFromState();
+          renderSignboard();
+          pushHistory();
+          showToast(`'${style.name}' 디자인 룩북이 적용되었습니다!`);
+        });
+        dom.lookbookGrid.appendChild(btn);
+      });
+      updateThemeSelectorButtons();
+    }
 
     // --- 5. Main Signboard Renderer ---
     function renderSignboard() {
@@ -1823,9 +2136,30 @@
       const hasBadge = !!(state.badge && state.badge.trim());
       const hasIcon = state.showIcon !== false && state.iconSize > 0 && !!ICONS[state.icon];
 
-      // Colors & Typography Sizes (Preserved across themes!)
+      // Colors, Dark Mode, & Surface Style Tokens
+      const isDark = !!palette.isDark;
+      const surface = state.surfaceStyle || 'classic';
       w.style.backgroundColor = palette.bg;
       w.style.color = palette.text;
+
+      let cardRadius = 'rounded-xl';
+      let badgeRadius = 'rounded-full';
+      let cardShadow = '';
+      if (surface === 'editorial') {
+        cardRadius = 'rounded-none';
+        badgeRadius = 'rounded-none';
+      } else if (surface === 'elevated') {
+        cardRadius = 'rounded-2xl';
+        badgeRadius = 'rounded-full';
+        cardShadow = isDark ? '0 14px 32px -10px rgba(0, 0, 0, 0.55)' : '0 10px 26px -8px rgba(15, 23, 42, 0.1)';
+      } else if (surface === 'left-stripe') {
+        cardRadius = 'rounded-lg';
+        badgeRadius = 'rounded-md';
+      } else if (surface === 'glass-glow') {
+        cardRadius = 'rounded-2xl';
+        badgeRadius = 'rounded-full';
+        cardShadow = `0 0 28px -8px ${palette.accent}45`;
+      }
 
       // 0) Top Slogan & 1) Badge Header Layout
       if (isLandscape) {
@@ -1849,12 +2183,22 @@
         dom.sloganContainer.style.justifyContent = 'flex-start';
         dom.sloganImg.src = ASSET_SLOGAN;
         dom.sloganImg.style.width = `${state.sloganWidth || 220}px`;
+        if (isDark) {
+          dom.sloganContainer.style.backgroundColor = 'rgba(255,255,255,0.94)';
+          dom.sloganContainer.style.padding = '5px 10px';
+          dom.sloganContainer.style.borderRadius = surface === 'editorial' ? '0px' : '8px';
+        } else {
+          dom.sloganContainer.style.backgroundColor = '';
+          dom.sloganContainer.style.padding = '';
+          dom.sloganContainer.style.borderRadius = '';
+        }
       } else {
         dom.sloganContainer.style.display = 'none';
       }
 
       if (hasBadge) {
         dom.badgeContainer.style.display = 'block';
+        dom.badge.className = `inline-block uppercase tracking-widest font-black border ${badgeRadius}`;
         dom.badge.textContent = state.badge;
         dom.badge.style.fontSize = `${state.badgeSize}px`;
         const py = Math.max(4, Math.round(state.badgeSize * 0.35));
@@ -1936,22 +2280,25 @@
 
       if (hasInfo) {
         dom.infoCard.style.display = 'block';
-        dom.infoCard.style.borderColor = palette.boxBorder;
-        dom.infoCard.style.backgroundColor = '#ffffff';
+        dom.infoCard.style.borderColor = surface === 'editorial' ? palette.accent : palette.boxBorder;
+        dom.infoCard.style.borderWidth = surface === 'editorial' ? '1.5px' : '1px';
+        dom.infoCard.style.borderLeft = surface === 'left-stripe' ? `5px solid ${palette.accent}` : '';
+        dom.infoCard.style.backgroundColor = palette.cardBg || '#ffffff';
+        dom.infoCard.style.boxShadow = cardShadow;
         if (isTwoColLandscape) {
-          dom.infoCard.className = 'col-span-6 w-full rounded-xl overflow-hidden border text-left';
+          dom.infoCard.className = `col-span-6 w-full ${cardRadius} overflow-hidden border text-left`;
         } else {
           const widthCls = isLandscape ? 'max-w-3xl' : 'max-w-xl';
-          dom.infoCard.className = `${widthCls} w-full rounded-xl overflow-hidden border text-left ${isLeft ? '' : 'mx-auto'}`;
+          dom.infoCard.className = `${widthCls} w-full ${cardRadius} overflow-hidden border text-left ${isLeft ? '' : 'mx-auto'}`;
         }
 
         const labelSpan = isTwoColLandscape ? 'col-span-4' : 'col-span-3';
         const valSpan = isTwoColLandscape ? 'col-span-8' : 'col-span-9';
         dom.infoRows.innerHTML = '';
-        validInfoRows.forEach(r => {
+        validInfoRows.forEach((r, rIdx) => {
           const rowEl = document.createElement('div');
           rowEl.className = 'grid grid-cols-12 items-stretch';
-          rowEl.style.borderColor = palette.boxBorder;
+          rowEl.style.borderTop = rIdx > 0 ? `1px solid ${palette.boxBorder}` : 'none';
           rowEl.style.fontSize = `${state.infoSize}px`;
           rowEl.innerHTML = `
             <div class="${labelSpan} px-3 py-2.5 font-extrabold flex items-center justify-center text-center tracking-wider" style="background-color:${palette.labelBg};color:${palette.labelText}">
@@ -1972,12 +2319,15 @@
       if (hasBullets) {
         dom.bulletsBox.style.display = 'block';
         dom.bulletsBox.style.backgroundColor = palette.boxBg;
-        dom.bulletsBox.style.borderColor = palette.boxBorder;
+        dom.bulletsBox.style.borderColor = surface === 'editorial' ? palette.accent : palette.boxBorder;
+        dom.bulletsBox.style.borderWidth = surface === 'editorial' ? '1.5px' : '1px';
+        dom.bulletsBox.style.borderLeft = surface === 'left-stripe' ? `5px solid ${palette.accent}` : '';
+        dom.bulletsBox.style.boxShadow = cardShadow;
         if (isTwoColLandscape) {
-          dom.bulletsBox.className = 'col-span-6 w-full p-4 rounded-xl border text-left';
+          dom.bulletsBox.className = `col-span-6 w-full p-4 ${cardRadius} border text-left`;
         } else {
           const widthCls = isLandscape ? 'max-w-3xl' : 'max-w-xl';
-          dom.bulletsBox.className = `${widthCls} w-full p-4 rounded-xl border text-left ${isLeft ? '' : 'mx-auto'}`;
+          dom.bulletsBox.className = `${widthCls} w-full p-4 ${cardRadius} border text-left ${isLeft ? '' : 'mx-auto'}`;
         }
         dom.bulletsList.style.display = 'flex';
         dom.bulletsList.style.flexDirection = 'column';
@@ -2011,9 +2361,10 @@
       const hasStamp = !!(state.stampText && state.stampText.trim());
       const hasQr = !!(state.showQr && state.qrText && state.qrText.trim() && window.QRious);
       const hasFooterActions = hasStamp || hasQr;
+      const footerBorderColor = isDark ? 'rgba(255, 255, 255, 0.16)' : 'rgba(148, 163, 184, 0.45)';
 
       if (isLandscape) {
-        dom.footer.className = 'relative z-10 pt-3 mt-2 border-t border-slate-300/80 flex items-center justify-between gap-4';
+        dom.footer.className = 'relative z-10 pt-3 mt-2 border-t flex items-center justify-between gap-4';
         dom.footerSpacer.className = 'hidden';
         dom.footerActions.className = hasFooterActions ? 'flex items-center justify-end gap-3 shrink-0' : 'hidden';
 
@@ -2037,7 +2388,7 @@
           dom.footerRight.className = `font-mono opacity-60 ${hasFooterActions ? 'text-left' : 'text-center'}`;
         }
       } else {
-        dom.footer.className = 'relative z-10 pt-4 mt-3 border-t border-slate-300/80 flex items-center justify-between gap-4';
+        dom.footer.className = 'relative z-10 pt-4 mt-3 border-t flex items-center justify-between gap-4';
         dom.footerSpacer.className = 'w-20 shrink-0 hidden sm:block';
         dom.footerActions.className = 'flex items-center justify-end gap-3 shrink-0 min-w-20';
         dom.footerCenter.className = 'flex-1 flex flex-col items-center justify-center text-center space-y-1';
@@ -2046,11 +2397,21 @@
         dom.footerLeft.className = 'flex flex-wrap items-center justify-center gap-2 opacity-90';
         dom.footerRight.className = 'font-mono opacity-60 text-center';
       }
+      dom.footer.style.borderColor = footerBorderColor;
 
       if (hasLogo) {
         dom.logoContainer.style.display = 'flex';
         dom.logoImg.src = ASSET_LOGO;
         dom.logoImg.style.height = `${state.logoHeight || 30}px`;
+        if (isDark) {
+          dom.logoContainer.style.backgroundColor = 'rgba(255,255,255,0.94)';
+          dom.logoContainer.style.padding = '4px 10px';
+          dom.logoContainer.style.borderRadius = surface === 'editorial' ? '0px' : '8px';
+        } else {
+          dom.logoContainer.style.backgroundColor = '';
+          dom.logoContainer.style.padding = '';
+          dom.logoContainer.style.borderRadius = '';
+        }
       } else {
         dom.logoContainer.style.display = 'none';
       }
@@ -2098,13 +2459,16 @@
       updateThemeSelectorButtons();
     }
 
-    // --- 6. Apply Border Frame Styles ---
+    // --- 6. Apply Border Frame Styles (10 Frame Styles) ---
     function applyFrameStyles(frame, palette) {
       const fo = dom.frameOverlay;
       fo.innerHTML = '';
       fo.style.border = '';
+      fo.style.borderRadius = '';
+      fo.style.boxShadow = '';
       fo.style.padding = '';
       fo.style.backgroundImage = '';
+      fo.style.backgroundColor = '';
       fo.style.backgroundClip = '';
       fo.style.borderColor = '';
       fo.className = 'absolute inset-4 pointer-events-none transition-all';
@@ -2113,6 +2477,23 @@
         fo.style.border = `3px solid ${palette.accent}33`;
         fo.style.padding = '5px';
         fo.innerHTML = `<div class="w-full h-full" style="border: 1px solid ${palette.accent}55;"></div>`;
+      } else if (frame === 'left-bar') {
+        fo.style.border = `1px solid ${palette.accent}28`;
+        fo.style.borderLeft = `10px solid ${palette.accent}`;
+      } else if (frame === 'split-duotone') {
+        fo.innerHTML = `
+          <div class="absolute top-0 left-0 right-0 h-2" style="background-color:${palette.accent};"></div>
+          <div class="absolute bottom-0 left-0 right-0 h-2" style="background-color:${palette.accent};opacity:0.35;"></div>
+        `;
+      } else if (frame === 'header-band') {
+        fo.style.border = `1px solid ${palette.accent}25`;
+        fo.innerHTML = `
+          <div class="w-full h-14" style="background-color:${palette.accent};opacity:0.12;border-bottom:3px solid ${palette.accent};"></div>
+        `;
+      } else if (frame === 'card-elevated') {
+        fo.style.border = `1.5px solid ${palette.accent}40`;
+        fo.style.borderRadius = '16px';
+        fo.style.boxShadow = `inset 0 0 0 1px ${palette.accent}15`;
       } else if (frame === 'solid-bold') {
         fo.style.border = `5px solid ${palette.accent}`;
       } else if (frame === 'corner-accent') {
@@ -2466,6 +2847,8 @@
         state.icon = currentRecommendation.icon;
         state.font = currentRecommendation.font;
         state.frame = currentRecommendation.frame;
+        state.surfaceStyle = 'classic';
+        state.lookbookId = '';
         syncControlsFromState();
         renderSignboard();
         pushHistory();
@@ -2511,6 +2894,8 @@
           state.showIcon = true;
           state.stampText = '';
           state.showQr = false;
+          state.surfaceStyle = 'classic';
+          state.lookbookId = '';
           Object.assign(state, DEFAULT_TYPO, JSON.parse(JSON.stringify(p)));
           resetScalePresetButtons();
           syncControlsFromState();
@@ -2602,26 +2987,52 @@
         showToast('글자 크기와 여백이 기본값으로 초기화되었습니다.');
       });
 
-      // Theme & Font & Align & Frame & Icon Size
-      document.querySelectorAll('.theme-choice-btn').forEach(btn => {
-        btn.addEventListener('click', () => {
-          state.theme = btn.getAttribute('data-theme');
+      // Quick Link to Lookbook Gallery in Design Tab
+      if (dom.btnGotoLookbook) {
+        dom.btnGotoLookbook.addEventListener('click', () => {
+          const designTabBtn = document.querySelector('.tab-btn[data-tab="design"]');
+          if (designTabBtn) designTabBtn.click();
+        });
+      }
+
+      // Lookbook Category Filter Pills
+      if (dom.lookbookFilterBar) {
+        dom.lookbookFilterBar.querySelectorAll('.lookbook-filter-btn').forEach(btn => {
+          btn.addEventListener('click', () => {
+            const cat = btn.getAttribute('data-cat') || 'all';
+            dom.lookbookFilterBar.querySelectorAll('.lookbook-filter-btn').forEach(b => {
+              b.className = 'lookbook-filter-btn px-2 py-0.5 rounded-full text-[10px] font-semibold bg-white text-slate-600 border border-slate-200 hover:bg-slate-100 transition';
+            });
+            btn.className = 'lookbook-filter-btn px-2 py-0.5 rounded-full text-[10px] font-bold bg-slate-900 text-white transition';
+            renderLookbookStyles(cat);
+          });
+        });
+      }
+
+      // Surface, Font, Align, Frame & Icon Size
+      if (dom.selectSurface) {
+        dom.selectSurface.addEventListener('change', (e) => {
+          state.surfaceStyle = e.target.value;
+          state.lookbookId = '';
           renderSignboard();
           pushHistory();
         });
-      });
+      }
       dom.selectFont.addEventListener('change', (e) => {
         state.font = e.target.value;
+        state.lookbookId = '';
         renderSignboard();
         pushHistory();
       });
       dom.selectAlign.addEventListener('change', (e) => {
         state.align = e.target.value;
+        state.lookbookId = '';
         renderSignboard();
         pushHistory();
       });
       dom.selectFrame.addEventListener('change', (e) => {
         state.frame = e.target.value;
+        state.lookbookId = '';
         renderSignboard();
         pushHistory();
       });
@@ -2763,6 +3174,8 @@
       } catch (e) {}
 
       loadLocalVault();
+      renderThemeSelector();
+      renderLookbookStyles('all');
       syncControlsFromState();
       initListeners();
       syncInputsToState();
