@@ -46,26 +46,50 @@
       html, body {
         margin: 0 !important;
         padding: 0 !important;
+        width: 100% !important;
+        height: 100% !important;
+        min-height: 0 !important;
+        display: block !important;
         background: #fff !important;
+        overflow: hidden !important;
         -webkit-print-color-adjust: exact !important;
         print-color-adjust: exact !important;
       }
       .no-print {
         display: none !important;
       }
+      main,
+      main > section {
+        display: block !important;
+        width: 100% !important;
+        height: 100% !important;
+        max-width: none !important;
+        min-height: 0 !important;
+        padding: 0 !important;
+        margin: 0 !important;
+        overflow: hidden !important;
+      }
       .print-container {
+        position: fixed !important;
+        inset: 0 !important;
         padding: 0 !important;
         margin: 0 !important;
         background: none !important;
         display: block !important;
         width: 100% !important;
         height: 100% !important;
-        overflow: visible !important;
+        overflow: hidden !important;
       }
       #canvas-zoom-stage {
-        transform: none !important;
-        width: 100% !important;
+        position: absolute !important;
+        top: var(--print-offset-y, 0px) !important;
+        left: var(--print-offset-x, 0px) !important;
+        transform-origin: top left !important;
+        transform: scale(var(--print-scale, 1.332)) !important;
+        transition: none !important;
+        width: auto !important;
         height: auto !important;
+        margin: 0 !important;
       }
       #signboard-wrapper {
         box-shadow: none !important;
@@ -74,14 +98,15 @@
         margin: 0 !important;
         page-break-after: avoid !important;
         page-break-inside: avoid !important;
+        break-inside: avoid !important;
       }
       body.orientation-portrait #signboard-wrapper {
-        width: 210mm !important;
-        height: 296.5mm !important;
+        width: 595px !important;
+        min-height: 842px !important;
       }
       body.orientation-landscape #signboard-wrapper {
-        width: 297mm !important;
-        height: 209.5mm !important;
+        width: 842px !important;
+        min-height: 595px !important;
       }
     }
 
@@ -3695,8 +3720,29 @@
       dom.authTabRegister.addEventListener('click', () => setAuthMode('register'));
       dom.authForm.addEventListener('submit', handleAuthSubmit);
 
-      // Print / PDF
+      // Print / PDF (scale 842x595 / 595x842 design canvas cleanly to fill 1 A4 page)
+      function preparePrintScale() {
+        const isLandscape = state.orientation !== 'portrait';
+        // 1mm = 3.779527559px (96dpi CSS px) -> A4 = 1122.52 x 793.70 px
+        const pageW = isLandscape ? 1122.52 : 793.70;
+        const pageH = isLandscape ? 793.70 : 1122.52;
+        const rawW = dom.wrapper.offsetWidth || (isLandscape ? 842 : 595);
+        const rawH = dom.wrapper.offsetHeight || (isLandscape ? 595 : 842);
+        const fitScale = Math.min(pageW / rawW, pageH / rawH) * 0.9985;
+        const scaledW = rawW * fitScale;
+        const scaledH = rawH * fitScale;
+        const offsetX = Math.max(0, (pageW - scaledW) / 2);
+        const offsetY = Math.max(0, (pageH - scaledH) / 2);
+        const rootStyle = document.documentElement.style;
+        rootStyle.setProperty('--print-scale', fitScale.toFixed(5));
+        rootStyle.setProperty('--print-offset-x', `${offsetX.toFixed(2)}px`);
+        rootStyle.setProperty('--print-offset-y', `${offsetY.toFixed(2)}px`);
+      }
+
+      window.addEventListener('beforeprint', preparePrintScale);
+
       dom.btnPrint.addEventListener('click', () => {
+        preparePrintScale();
         window.print();
       });
 
