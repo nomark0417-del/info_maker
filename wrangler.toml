@@ -9,4 +9,4 @@ binding = "ASSETS"
 [[d1_databases]]
 binding = "DB"
 database_name = "a4-signboard-db"
-database_id = "00000000-0000-0000-0000-000000000000"
+database_id = "8f88f724-d6ce-439f-99b2-38d30d758fb8"
