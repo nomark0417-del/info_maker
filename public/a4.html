@@ -117,14 +117,14 @@
     }
   </style>
   <style id="dynamic-print-style">
-    @page { size: A4 portrait; margin: 0; }
+    @page { size: A4 landscape; margin: 0; }
   </style>
 </head>
-<body class="bg-slate-100 text-slate-800 font-pretendard antialiased min-h-screen flex flex-col orientation-portrait">
+<body class="bg-slate-100 text-slate-800 font-pretendard antialiased min-h-screen flex flex-col orientation-landscape">
 
   <!-- Top Navigation Bar -->
   <header class="no-print bg-slate-900 text-white border-b border-slate-800 sticky top-0 z-30 shadow-md">
-    <div class="max-w-[1440px] mx-auto px-4 sm:px-6 py-2.5 flex flex-wrap items-center justify-between gap-3">
+    <div class="max-w-[1560px] mx-auto px-4 sm:px-6 py-2.5 flex flex-wrap items-center justify-between gap-3">
       <div class="flex items-center space-x-3">
         <div class="w-9 h-9 rounded-xl bg-gradient-to-br from-amber-400 to-amber-600 flex items-center justify-center font-black text-slate-950 text-lg tracking-tighter shadow-inner">
           A4
@@ -150,11 +150,11 @@
 
         <!-- Orientation Toggle -->
         <div class="inline-flex rounded-lg bg-slate-800 p-0.5 border border-slate-700" role="group">
-          <button type="button" id="btn-portrait" class="px-2.5 py-1 text-xs font-bold rounded-md transition-all flex items-center gap-1 bg-amber-500 text-slate-950 shadow-sm">
+          <button type="button" id="btn-portrait" class="px-2.5 py-1 text-xs font-medium rounded-md transition-all flex items-center gap-1 text-slate-300 hover:text-white">
             <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 3h10a2 2 0 012 2v14a2 2 0 01-2 2H7a2 2 0 01-2-2V5a2 2 0 012-2z"></path></svg>
             세로형
           </button>
-          <button type="button" id="btn-landscape" class="px-2.5 py-1 text-xs font-medium rounded-md transition-all flex items-center gap-1 text-slate-300 hover:text-white">
+          <button type="button" id="btn-landscape" class="px-2.5 py-1 text-xs font-bold rounded-md transition-all flex items-center gap-1 bg-amber-500 text-slate-950 shadow-sm">
             <svg class="w-3.5 h-3.5 rotate-90" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 3h10a2 2 0 012 2v14a2 2 0 01-2 2H7a2 2 0 01-2-2V5a2 2 0 012-2z"></path></svg>
             가로형
           </button>
@@ -180,10 +180,10 @@
   </header>
 
   <!-- Main Body Layout -->
-  <main class="flex-1 max-w-[1440px] w-full mx-auto p-3 sm:p-5 grid grid-cols-1 lg:grid-cols-12 gap-5 items-start">
+  <main class="flex-1 max-w-[1560px] w-full mx-auto p-3 sm:p-5 grid grid-cols-1 lg:grid-cols-12 gap-5 items-start">
 
     <!-- Left Column: Tabbed Controls & Input Form -->
-    <aside class="no-print lg:col-span-5 bg-white rounded-2xl border border-slate-200 shadow-sm overflow-hidden flex flex-col">
+    <aside class="no-print lg:col-span-5 xl:col-span-4 bg-white rounded-2xl border border-slate-200 shadow-sm overflow-hidden flex flex-col">
 
       <!-- Tab Navigation -->
       <div class="grid grid-cols-4 bg-slate-100 p-1 border-b border-slate-200 text-xs font-bold">
@@ -710,7 +710,7 @@
     </aside>
 
     <!-- Right Column: Live A4 Signboard Canvas -->
-    <section class="lg:col-span-7 flex flex-col items-center">
+    <section class="lg:col-span-7 xl:col-span-8 flex flex-col items-center min-w-0">
 
       <!-- Canvas Header Info & Zoom Bar -->
       <div class="no-print w-full flex flex-wrap items-center justify-between gap-2 mb-3 px-2">
@@ -718,7 +718,7 @@
           <span class="inline-block w-2.5 h-2.5 rounded-full bg-emerald-500 animate-pulse"></span>
           <span class="text-xs font-bold text-slate-700">실시간 A4 프리뷰</span>
           <span id="canvas-spec-label" class="text-[11px] px-2 py-0.5 rounded bg-slate-200 text-slate-700 font-mono">
-            A4 세로 (210 × 297 mm)
+            A4 가로 (297 × 210 mm)
           </span>
         </div>
 
@@ -735,81 +735,86 @@
       <!-- Signboard Sheet Container -->
       <div class="print-container w-full flex justify-center items-start py-2 overflow-x-auto">
         <div id="canvas-zoom-stage" class="origin-top transition-transform duration-200">
-          <div id="signboard-wrapper" class="signboard-portrait relative bg-white transition-colors duration-200 shadow-2xl rounded-sm overflow-hidden border border-slate-300 flex flex-col justify-between select-none" style="padding: 48px;">
+          <div id="signboard-wrapper" class="signboard-landscape relative bg-white transition-colors duration-200 shadow-2xl rounded-sm overflow-hidden border border-slate-300 flex flex-col justify-between select-none" style="padding: 34px 48px;">
             
             <!-- Decorative Frame Overlay -->
             <div id="frame-overlay" class="absolute inset-4 pointer-events-none transition-all"></div>
 
-            <!-- Top Section: Slogan (Top-Left), Badge & Icon -->
-            <div id="sign-header" class="relative z-10 flex flex-col items-center text-center">
+            <!-- Top Section: Slogan & Badge -->
+            <div id="sign-header" class="relative z-10 flex flex-row items-center justify-between gap-4 w-full mb-3">
               <!-- Top Slogan Image (상단 좌측 배치) -->
-              <div id="sign-slogan-container" class="w-full flex justify-start mb-2 transition-all">
+              <div id="sign-slogan-container" class="flex justify-start transition-all shrink-0">
                 <img id="sign-slogan-img" src="" alt="오늘이 행복한 울산교육" class="max-w-full object-contain">
               </div>
 
-              <div id="sign-badge-container" class="mb-4">
+              <div id="sign-badge-container" class="shrink-0">
                 <span id="sign-badge" class="inline-block uppercase tracking-widest font-black px-4 py-1.5 rounded-full border">
                   2026 직무연수 안내
                 </span>
               </div>
-
-              <div id="sign-icon-container" class="mb-4 flex justify-center items-center transition-all">
-                <!-- SVG icon rendered here -->
-              </div>
             </div>
 
-            <!-- Middle Section: Main Title, Subtitle, Event Summary Table, Bullets -->
-            <div id="sign-body" class="relative z-10 flex-1 flex flex-col justify-center my-2 text-center">
-              <h2 id="sign-title" class="font-black tracking-tight mb-4 break-keep whitespace-pre-line">
-                2026학년도 역량 강화 직무연수 안내
-              </h2>
+            <!-- Middle Section: Icon + Main Title, Subtitle, 2-Col Info Table & Bullets -->
+            <div id="sign-body" class="relative z-10 flex-1 flex flex-col justify-center my-1 text-center">
+              <div id="sign-hero-row" class="flex flex-row items-center justify-center gap-4 mb-2.5">
+                <div id="sign-icon-container" class="flex justify-center items-center transition-all shrink-0">
+                  <!-- SVG icon rendered here -->
+                </div>
+                <h2 id="sign-title" class="font-black tracking-tight break-keep whitespace-pre-line">
+                  2026학년도 역량 강화 직무연수 안내
+                </h2>
+              </div>
 
-              <p id="sign-subtitle" class="leading-relaxed max-w-2xl mx-auto break-keep whitespace-pre-line mb-5">
+              <p id="sign-subtitle" class="leading-relaxed max-w-3xl mx-auto break-keep whitespace-pre-line mb-4">
                 참석자 여러분을 진심으로 환영합니다. 원활한 연수 진행을 위해 아래 안내 사항을 확인해 주시기 바랍니다.
               </p>
 
-              <!-- Event / Meeting Key Info Table (일시 / 장소 / 대상) -->
-              <div id="sign-info-card" class="max-w-xl w-full mx-auto my-2.5 rounded-xl overflow-hidden border text-left">
-                <div id="sign-info-rows" class="divide-y">
-                  <!-- Populated via JS -->
+              <!-- Info Card + Bullets Container (2-column grid in Landscape, stacked in Portrait) -->
+              <div id="sign-content-grid" class="grid grid-cols-12 gap-4 w-full items-center my-1">
+                <!-- Event / Meeting Key Info Table (일시 / 장소 / 대상) -->
+                <div id="sign-info-card" class="col-span-6 w-full rounded-xl overflow-hidden border text-left">
+                  <div id="sign-info-rows" class="divide-y">
+                    <!-- Populated via JS -->
+                  </div>
                 </div>
-              </div>
 
-              <!-- Bullets Box -->
-              <div id="sign-bullets-box" class="max-w-xl mx-auto w-full my-2.5 text-left">
-                <ul id="sign-bullets-list">
-                  <!-- Bullet list items -->
-                </ul>
+                <!-- Bullets Box -->
+                <div id="sign-bullets-box" class="col-span-6 w-full p-4 rounded-xl border text-left">
+                  <ul id="sign-bullets-list">
+                    <!-- Bullet list items -->
+                  </ul>
+                </div>
               </div>
             </div>
 
-            <!-- Bottom Section: Centered Logo & Sub-info, Stamp, QR -->
-            <div id="sign-footer" class="relative z-10 pt-4 mt-3 border-t border-slate-300/80 flex items-center justify-between gap-4">
-              <!-- Left spacer to balance Right Stamp/QR or hold extra item -->
-              <div id="sign-footer-spacer" class="w-20 shrink-0 hidden sm:block"></div>
+            <!-- Bottom Section: Logo, Org/Contact/Date, Stamp & QR -->
+            <div id="sign-footer" class="relative z-10 pt-3 mt-2 border-t border-slate-300/80 flex items-center justify-between gap-4">
+              <!-- Left spacer (Portrait balance only) -->
+              <div id="sign-footer-spacer" class="w-20 shrink-0 hidden"></div>
 
-              <!-- Center: CI Logo + Org/Dept/Contact + Date in smaller text -->
-              <div id="sign-footer-center" class="flex-1 flex flex-col items-center justify-center text-center space-y-1">
-                <!-- Bottom Logo Image (하단 중앙 배치) -->
-                <div id="sign-logo-container" class="mb-1 flex justify-center transition-all">
+              <!-- Center / Main Footer Info: CI Logo + Org/Dept/Contact + Date -->
+              <div id="sign-footer-center" class="flex-1 flex flex-row items-center justify-between gap-4">
+                <!-- Bottom Logo Image -->
+                <div id="sign-logo-container" class="flex justify-start items-center transition-all shrink-0">
                   <img id="sign-logo-img" src="" alt="울산광역시교육청" class="object-contain">
                 </div>
                 
-                <!-- Org / Dept / Contact under the logo -->
-                <div id="sign-footer-left" class="flex flex-wrap items-center justify-center gap-2 opacity-90">
-                  <span id="sign-footer-org" class="font-bold">교육연수운영부</span>
-                  <span id="sign-footer-divider" class="opacity-40">|</span>
-                  <span id="sign-footer-contact" class="opacity-80">연수지원팀 (내선 302번)</span>
-                </div>
+                <!-- Org / Dept / Contact & Date -->
+                <div id="sign-footer-meta" class="flex flex-col items-end text-right space-y-0.5">
+                  <div id="sign-footer-left" class="flex flex-wrap items-center justify-end gap-2 opacity-90">
+                    <span id="sign-footer-org" class="font-bold">교육연수운영부</span>
+                    <span id="sign-footer-divider" class="opacity-40">|</span>
+                    <span id="sign-footer-contact" class="opacity-80">연수지원팀 (내선 302번)</span>
+                  </div>
 
-                <!-- Date under org -->
-                <div id="sign-footer-right" class="font-mono opacity-60 text-center">
-                  <span id="sign-date-display">2026. 11. 11.</span>
+                  <div id="sign-footer-right" class="font-mono opacity-60">
+                    <span id="sign-date-display">2026. 11. 11.</span>
+                  </div>
                 </div>
               </div>
 
               <!-- Right: Official Stamp Badge & Optional QR -->
-              <div class="flex items-center justify-end gap-3 shrink-0 min-w-20">
+              <div id="sign-footer-actions" class="hidden flex items-center justify-end gap-3 shrink-0">
                 <!-- Official Stamp Badge -->
                 <div id="sign-stamp-box" class="hidden px-3 py-1.5 rounded border-2 font-black tracking-widest text-xs uppercase">
                   안내필
@@ -817,7 +822,7 @@
 
                 <!-- QR Code Block -->
                 <div id="sign-qr-box" class="hidden flex flex-col items-center p-1.5 bg-white rounded-lg border border-slate-300 shadow-2xs">
-                  <canvas id="sign-qr-canvas" width="68" height="68"></canvas>
+                  <canvas id="sign-qr-canvas" width="60" height="60"></canvas>
                   <span id="sign-qr-label" class="text-[10px] font-bold text-slate-700 mt-1 max-w-[84px] text-center leading-tight break-keep">연수교재</span>
                 </div>
               </div>
@@ -866,7 +871,7 @@
       id: null, // Active saved record ID (for overwrite update)
       category: '연수안내',
       memo: '',
-      orientation: 'portrait', // 'portrait' | 'landscape'
+      orientation: 'landscape', // 'portrait' | 'landscape'
       badge: '2026 직무연수 안내',
       title: '2026학년도 역량 강화 직무연수 안내',
       subtitle: '참석자 여러분을 진심으로 환영합니다. 원활한 연수 진행을 위해 아래 안내 사항을 확인해 주시기 바랍니다.',
@@ -962,7 +967,7 @@
     const PRESETS = {
       training: {
         category: '연수안내',
-        orientation: 'portrait',
+        orientation: 'landscape',
         badge: '2026 직무연수 안내',
         title: '2026학년도 역량 강화 직무연수 안내',
         subtitle: '참석자 여러분을 진심으로 환영합니다. 원활한 연수 진행을 위해 아래 안내 사항을 확인해 주시기 바랍니다.',
@@ -990,7 +995,7 @@
       },
       council: {
         category: '협의회',
-        orientation: 'portrait',
+        orientation: 'landscape',
         badge: 'COUNCIL MEETING / 협의회 안내',
         title: '2026년 정기 업무 협의회 개최 안내',
         subtitle: '바쁘신 일정 중에도 참석해 주신 위원님들께 깊이 감사드립니다.',
@@ -1018,7 +1023,7 @@
       },
       seminar: {
         category: '행사안내',
-        orientation: 'portrait',
+        orientation: 'landscape',
         badge: 'SPECIAL EVENT / 초청 행사 안내',
         title: '미래 교육 혁신 워크숍 및 초청 특강',
         subtitle: '새로운 변화와 인사이트를 나누는 뜻깊은 자리에 함께해 주셔서 감사합니다.',
@@ -1099,7 +1104,7 @@
       },
       danger: {
         category: '일반안내',
-        orientation: 'portrait',
+        orientation: 'landscape',
         badge: 'DANGER / 위험 경고',
         title: '관계자 외 출입을 금합니다',
         subtitle: '안전사고 예방 및 시설 보안을 위해 무단 출입을 엄격히 통제하오니 협조 바랍니다.',
@@ -1119,7 +1124,7 @@
       },
       quiet: {
         category: '일반안내',
-        orientation: 'portrait',
+        orientation: 'landscape',
         badge: 'QUIET ZONE / 정숙 구역',
         title: '진행 중이오니 정숙해 주세요',
         subtitle: '현재 내부에서 중요 연수 및 회의가 진행 중입니다. 정숙을 유지해 주시기 바랍니다.',
@@ -1185,7 +1190,7 @@
       },
       eco: {
         category: '일반안내',
-        orientation: 'portrait',
+        orientation: 'landscape',
         badge: 'ECO CAMPAIGN / 친환경 실천',
         title: '다회용 컵 사용 및 분리배출 안내',
         subtitle: '탄소중립 실천을 위해 행사장 내 일회용품 사용 줄이기에 적극 동참해 주시기 바랍니다.',
@@ -1306,16 +1311,24 @@
       zoomStage: document.getElementById('canvas-zoom-stage'),
       wrapper: document.getElementById('signboard-wrapper'),
       frameOverlay: document.getElementById('frame-overlay'),
+      header: document.getElementById('sign-header'),
       badgeContainer: document.getElementById('sign-badge-container'),
       badge: document.getElementById('sign-badge'),
+      signBody: document.getElementById('sign-body'),
+      heroRow: document.getElementById('sign-hero-row'),
       iconContainer: document.getElementById('sign-icon-container'),
       title: document.getElementById('sign-title'),
       subtitle: document.getElementById('sign-subtitle'),
+      contentGrid: document.getElementById('sign-content-grid'),
       infoCard: document.getElementById('sign-info-card'),
       infoRows: document.getElementById('sign-info-rows'),
       bulletsBox: document.getElementById('sign-bullets-box'),
       bulletsList: document.getElementById('sign-bullets-list'),
       footer: document.getElementById('sign-footer'),
+      footerSpacer: document.getElementById('sign-footer-spacer'),
+      footerCenter: document.getElementById('sign-footer-center'),
+      footerMeta: document.getElementById('sign-footer-meta'),
+      footerActions: document.getElementById('sign-footer-actions'),
       footerLeft: document.getElementById('sign-footer-left'),
       footerOrg: document.getElementById('sign-footer-org'),
       footerDivider: document.getElementById('sign-footer-divider'),
@@ -1765,9 +1778,10 @@
     function renderSignboard() {
       const w = dom.wrapper;
       const palette = THEME_PALETTES[state.theme] || THEME_PALETTES['royal-blue'];
+      const isLandscape = state.orientation !== 'portrait';
 
       // Orientation & Dynamic @page Print Rule
-      if (state.orientation === 'portrait') {
+      if (!isLandscape) {
         w.classList.remove('signboard-landscape');
         w.classList.add('signboard-portrait');
         dom.body.classList.remove('orientation-landscape');
@@ -1790,26 +1804,47 @@
       // Zoom Stage
       dom.zoomStage.style.transform = `scale(${state.zoom || 1})`;
 
-      // Padding
-      w.style.padding = `${state.canvasPadding || 48}px`;
+      // Padding (Landscape uses slightly tighter vertical padding to preserve A4 single-page balance)
+      const padX = state.canvasPadding || 48;
+      if (isLandscape) {
+        const padY = Math.max(28, Math.round(padX * 0.72));
+        w.style.padding = `${padY}px ${padX}px`;
+      } else {
+        w.style.padding = `${padX}px`;
+      }
 
       // Font Family
       w.classList.remove('font-pretendard', 'font-sans', 'font-serif', 'font-myeongjo', 'font-batang', 'font-display', 'font-impact');
       w.classList.add(state.font || 'font-pretendard');
 
-      // Alignment
+      // Alignment & Element Visibility Flags
       const isLeft = state.align === 'text-left';
-      dom.title.style.textAlign = isLeft ? 'left' : 'center';
-      dom.subtitle.style.textAlign = isLeft ? 'left' : 'center';
-      dom.iconContainer.style.justifyContent = isLeft ? 'flex-start' : 'center';
-      document.getElementById('sign-header').style.alignItems = isLeft ? 'flex-start' : 'center';
+      const hasSlogan = state.showSlogan !== false && typeof ASSET_SLOGAN !== 'undefined';
+      const hasBadge = !!(state.badge && state.badge.trim());
+      const hasIcon = state.showIcon !== false && state.iconSize > 0 && !!ICONS[state.icon];
 
       // Colors & Typography Sizes (Preserved across themes!)
       w.style.backgroundColor = palette.bg;
       w.style.color = palette.text;
 
-      // 0) Top Slogan Image (오늘이 행복한 울산교육 - 상단 좌측 배치)
-      if (state.showSlogan !== false && typeof ASSET_SLOGAN !== 'undefined') {
+      // 0) Top Slogan & 1) Badge Header Layout
+      if (isLandscape) {
+        let headerJustify = 'justify-start';
+        if (hasSlogan && hasBadge) headerJustify = 'justify-between';
+        else if (!hasSlogan && hasBadge) headerJustify = isLeft ? 'justify-start' : 'justify-center';
+
+        dom.header.className = `relative z-10 flex flex-row items-center ${headerJustify} gap-4 w-full ${hasSlogan || hasBadge ? 'mb-3' : 'mb-0'}`;
+        dom.header.style.alignItems = 'center';
+        dom.sloganContainer.className = 'flex justify-start transition-all shrink-0';
+        dom.badgeContainer.style.marginTop = '0px';
+        dom.badgeContainer.style.marginBottom = '0px';
+      } else {
+        dom.header.className = `relative z-10 flex flex-col w-full ${isLeft ? 'items-start text-left' : 'items-center text-center'}`;
+        dom.header.style.alignItems = isLeft ? 'flex-start' : 'center';
+        dom.sloganContainer.className = 'w-full flex justify-start mb-2 transition-all';
+      }
+
+      if (hasSlogan) {
         dom.sloganContainer.style.display = 'flex';
         dom.sloganContainer.style.justifyContent = 'flex-start';
         dom.sloganImg.src = ASSET_SLOGAN;
@@ -1818,8 +1853,7 @@
         dom.sloganContainer.style.display = 'none';
       }
 
-      // 1) Badge
-      if (state.badge && state.badge.trim()) {
+      if (hasBadge) {
         dom.badgeContainer.style.display = 'block';
         dom.badge.textContent = state.badge;
         dom.badge.style.fontSize = `${state.badgeSize}px`;
@@ -1833,18 +1867,33 @@
         dom.badgeContainer.style.display = 'none';
       }
 
-      // 2) Icon
-      const hasIcon = state.showIcon !== false && state.iconSize > 0 && !!ICONS[state.icon];
+      // 2) Hero Row: Icon + Main Title
+      if (isLandscape) {
+        dom.signBody.className = `relative z-10 flex-1 flex flex-col justify-center my-1 ${isLeft ? 'text-left' : 'text-center'}`;
+        dom.heroRow.className = `flex flex-row items-center gap-4 mb-2.5 ${isLeft ? 'justify-start' : 'justify-center'}`;
+        dom.iconContainer.className = 'flex justify-center items-center transition-all shrink-0';
+        dom.title.style.textAlign = (isLeft || hasIcon) ? 'left' : 'center';
+      } else {
+        dom.signBody.className = `relative z-10 flex-1 flex flex-col justify-center my-2 ${isLeft ? 'text-left' : 'text-center'}`;
+        dom.heroRow.className = `flex flex-col mb-4 ${isLeft ? 'items-start' : 'items-center'}`;
+        dom.iconContainer.className = `mb-4 flex items-center transition-all ${isLeft ? 'justify-start' : 'justify-center'}`;
+        dom.title.style.textAlign = isLeft ? 'left' : 'center';
+      }
+
       if (!hasIcon) {
         dom.iconContainer.style.display = 'none';
-        // 아이콘이 없을 때는 뱃지가 위쪽에 너무 붙지 않도록 상단 여백을 주고 본문과의 여백도 균형감 있게 배치
-        dom.badgeContainer.style.marginTop = '28px';
-        dom.badgeContainer.style.marginBottom = '28px';
+        if (!isLandscape) {
+          // 아이콘이 없을 때는 뱃지가 위쪽에 너무 붙지 않도록 상단 여백을 주고 본문과의 여백도 균형감 있게 배치
+          dom.badgeContainer.style.marginTop = '28px';
+          dom.badgeContainer.style.marginBottom = '28px';
+        }
       } else {
         dom.iconContainer.style.display = 'flex';
         dom.iconContainer.innerHTML = `<div style="width:${state.iconSize}px;height:${state.iconSize}px;color:${palette.accent}" class="transition-all">${ICONS[state.icon]}</div>`;
-        dom.badgeContainer.style.marginTop = '0px';
-        dom.badgeContainer.style.marginBottom = '16px';
+        if (!isLandscape) {
+          dom.badgeContainer.style.marginTop = '0px';
+          dom.badgeContainer.style.marginBottom = '16px';
+        }
       }
 
       // 3) Main Title
@@ -1860,20 +1909,44 @@
         dom.subtitle.textContent = state.subtitle;
         dom.subtitle.style.fontSize = `${state.subtitleSize}px`;
         dom.subtitle.style.color = palette.subtitleColor;
-        dom.subtitle.style.marginLeft = isLeft ? '0' : 'auto';
-        dom.subtitle.style.marginRight = isLeft ? '0' : 'auto';
+        dom.subtitle.style.textAlign = isLeft ? 'left' : 'center';
+        dom.subtitle.className = isLandscape
+          ? `leading-relaxed max-w-3xl break-keep whitespace-pre-line mb-4 ${isLeft ? '' : 'mx-auto'}`
+          : `leading-relaxed max-w-2xl break-keep whitespace-pre-line mb-5 ${isLeft ? '' : 'mx-auto'}`;
       } else {
         dom.subtitle.style.display = 'none';
       }
 
-      // 5) Structured Event / Meeting Info Card (일시 / 장소 / 대상)
+      // 5) Structured Event / Meeting Info Card & 6) Bullets Box (2-col in Landscape when both active)
       const validInfoRows = (state.infoRows || []).filter(r => r && r.value && r.value.trim());
-      if (state.showInfoCard && validInfoRows.length > 0) {
+      const validBullets = (state.bullets || []).filter(b => b && b.trim());
+      const hasInfo = !!(state.showInfoCard && validInfoRows.length > 0);
+      const hasBullets = validBullets.length > 0;
+      const isTwoColLandscape = isLandscape && hasInfo && hasBullets;
+
+      if (!hasInfo && !hasBullets) {
+        dom.contentGrid.style.display = 'none';
+      } else if (isTwoColLandscape) {
+        dom.contentGrid.style.display = 'grid';
+        dom.contentGrid.className = 'grid grid-cols-12 gap-4 w-full items-center my-1';
+      } else {
+        dom.contentGrid.style.display = 'flex';
+        dom.contentGrid.className = `flex flex-col w-full ${isLandscape ? 'gap-3 my-1' : 'gap-2.5 my-1'} ${isLeft ? 'items-start' : 'items-center'}`;
+      }
+
+      if (hasInfo) {
         dom.infoCard.style.display = 'block';
         dom.infoCard.style.borderColor = palette.boxBorder;
         dom.infoCard.style.backgroundColor = '#ffffff';
-        dom.infoCard.style.marginLeft = isLeft ? '0' : 'auto';
-        dom.infoCard.style.marginRight = isLeft ? '0' : 'auto';
+        if (isTwoColLandscape) {
+          dom.infoCard.className = 'col-span-6 w-full rounded-xl overflow-hidden border text-left';
+        } else {
+          const widthCls = isLandscape ? 'max-w-3xl' : 'max-w-xl';
+          dom.infoCard.className = `${widthCls} w-full rounded-xl overflow-hidden border text-left ${isLeft ? '' : 'mx-auto'}`;
+        }
+
+        const labelSpan = isTwoColLandscape ? 'col-span-4' : 'col-span-3';
+        const valSpan = isTwoColLandscape ? 'col-span-8' : 'col-span-9';
         dom.infoRows.innerHTML = '';
         validInfoRows.forEach(r => {
           const rowEl = document.createElement('div');
@@ -1881,10 +1954,10 @@
           rowEl.style.borderColor = palette.boxBorder;
           rowEl.style.fontSize = `${state.infoSize}px`;
           rowEl.innerHTML = `
-            <div class="col-span-3 px-3 py-2.5 font-extrabold flex items-center justify-center text-center tracking-wider" style="background-color:${palette.labelBg};color:${palette.labelText}">
+            <div class="${labelSpan} px-3 py-2.5 font-extrabold flex items-center justify-center text-center tracking-wider" style="background-color:${palette.labelBg};color:${palette.labelText}">
               ${escapeHtml(r.label || '항목')}
             </div>
-            <div class="col-span-9 px-4 py-2.5 font-semibold flex items-center break-keep" style="color:${palette.text}">
+            <div class="${valSpan} px-4 py-2.5 font-semibold flex items-center break-keep" style="color:${palette.text}">
               ${escapeHtml(r.value)}
             </div>
           `;
@@ -1896,12 +1969,16 @@
 
       // 6) Bullets Box
       dom.bulletsList.innerHTML = '';
-      const validBullets = (state.bullets || []).filter(b => b && b.trim());
-      if (validBullets.length > 0) {
+      if (hasBullets) {
         dom.bulletsBox.style.display = 'block';
         dom.bulletsBox.style.backgroundColor = palette.boxBg;
         dom.bulletsBox.style.borderColor = palette.boxBorder;
-        dom.bulletsBox.className = `max-w-xl w-full my-2.5 p-4 rounded-xl border text-left ${isLeft ? '' : 'mx-auto'}`;
+        if (isTwoColLandscape) {
+          dom.bulletsBox.className = 'col-span-6 w-full p-4 rounded-xl border text-left';
+        } else {
+          const widthCls = isLandscape ? 'max-w-3xl' : 'max-w-xl';
+          dom.bulletsBox.className = `${widthCls} w-full p-4 rounded-xl border text-left ${isLeft ? '' : 'mx-auto'}`;
+        }
         dom.bulletsList.style.display = 'flex';
         dom.bulletsList.style.flexDirection = 'column';
         dom.bulletsList.style.gap = `${state.bulletGap}px`;
@@ -1929,10 +2006,49 @@
         dom.bulletsBox.style.display = 'none';
       }
 
-      // 7) Footer: Centered Logo + Sub-info, Stamp, QR
-      if (state.showLogo !== false && typeof ASSET_LOGO !== 'undefined') {
+      // 7) Footer: Horizontal bar in Landscape, Centered stack in Portrait
+      const hasLogo = state.showLogo !== false && typeof ASSET_LOGO !== 'undefined';
+      const hasStamp = !!(state.stampText && state.stampText.trim());
+      const hasQr = !!(state.showQr && state.qrText && state.qrText.trim() && window.QRious);
+      const hasFooterActions = hasStamp || hasQr;
+
+      if (isLandscape) {
+        dom.footer.className = 'relative z-10 pt-3 mt-2 border-t border-slate-300/80 flex items-center justify-between gap-4';
+        dom.footerSpacer.className = 'hidden';
+        dom.footerActions.className = hasFooterActions ? 'flex items-center justify-end gap-3 shrink-0' : 'hidden';
+
+        if (hasLogo) {
+          dom.logoContainer.className = 'flex justify-start items-center transition-all shrink-0';
+          if (hasFooterActions) {
+            dom.footerCenter.className = 'flex-1 flex flex-row items-center justify-start gap-4';
+            dom.footerMeta.className = 'flex flex-col items-start text-left space-y-0.5';
+            dom.footerLeft.className = 'flex flex-wrap items-center justify-start gap-2 opacity-90';
+            dom.footerRight.className = 'font-mono opacity-60 text-left';
+          } else {
+            dom.footerCenter.className = 'flex-1 flex flex-row items-center justify-between gap-4';
+            dom.footerMeta.className = 'flex flex-col items-end text-right space-y-0.5';
+            dom.footerLeft.className = 'flex flex-wrap items-center justify-end gap-2 opacity-90';
+            dom.footerRight.className = 'font-mono opacity-60 text-right';
+          }
+        } else {
+          dom.footerCenter.className = `flex-1 flex flex-row items-center ${hasFooterActions ? 'justify-start' : 'justify-center'}`;
+          dom.footerMeta.className = `flex flex-col space-y-0.5 ${hasFooterActions ? 'items-start text-left' : 'items-center text-center'}`;
+          dom.footerLeft.className = `flex flex-wrap items-center gap-2 opacity-90 ${hasFooterActions ? 'justify-start' : 'justify-center'}`;
+          dom.footerRight.className = `font-mono opacity-60 ${hasFooterActions ? 'text-left' : 'text-center'}`;
+        }
+      } else {
+        dom.footer.className = 'relative z-10 pt-4 mt-3 border-t border-slate-300/80 flex items-center justify-between gap-4';
+        dom.footerSpacer.className = 'w-20 shrink-0 hidden sm:block';
+        dom.footerActions.className = 'flex items-center justify-end gap-3 shrink-0 min-w-20';
+        dom.footerCenter.className = 'flex-1 flex flex-col items-center justify-center text-center space-y-1';
+        dom.logoContainer.className = 'mb-1 flex justify-center transition-all';
+        dom.footerMeta.className = 'flex flex-col items-center text-center space-y-1';
+        dom.footerLeft.className = 'flex flex-wrap items-center justify-center gap-2 opacity-90';
+        dom.footerRight.className = 'font-mono opacity-60 text-center';
+      }
+
+      if (hasLogo) {
         dom.logoContainer.style.display = 'flex';
-        dom.logoContainer.style.justifyContent = 'center';
         dom.logoImg.src = ASSET_LOGO;
         dom.logoImg.style.height = `${state.logoHeight || 30}px`;
       } else {
@@ -1943,7 +2059,6 @@
       dom.footerContact.textContent = state.footerContact || '';
       dom.footerDivider.style.display = (state.footerOrg && state.footerContact) ? 'inline' : 'none';
       dom.footerLeft.style.display = (state.footerOrg || state.footerContact) ? 'flex' : 'none';
-      // Logo sub-info small text font size (scaled slightly smaller than normal footer)
       const subInfoSize = Math.max(11, Math.round(state.footerSize * 0.9));
       dom.footerLeft.style.fontSize = `${subInfoSize}px`;
 
@@ -1955,7 +2070,7 @@
         dom.footerRight.style.display = 'none';
       }
 
-      if (state.stampText && state.stampText.trim()) {
+      if (hasStamp) {
         dom.stampBox.classList.remove('hidden');
         dom.stampBox.textContent = state.stampText.trim();
         dom.stampBox.style.borderColor = palette.accent;
@@ -1964,12 +2079,12 @@
         dom.stampBox.classList.add('hidden');
       }
 
-      if (state.showQr && state.qrText && state.qrText.trim() && window.QRious) {
+      if (hasQr) {
         dom.qrBox.classList.remove('hidden');
         new QRious({
           element: dom.qrCanvas,
           value: state.qrText.trim(),
-          size: 68,
+          size: isLandscape ? 58 : 68,
           level: 'M'
         });
         dom.qrLabel.textContent = state.qrLabel || '';
@@ -2038,7 +2153,7 @@
               title: '2026학년도 역량 강화 직무연수 안내',
               category: '연수안내',
               memo: '기본 직무연수 양식',
-              orientation: 'portrait',
+              orientation: 'landscape',
               updated_at: new Date().toISOString(),
               state_json: JSON.stringify({ ...state, ...PRESETS.training, id: 'sample-training-1' })
             },
@@ -2047,7 +2162,7 @@
               title: '2026년 정기 업무 협의회 개최 안내',
               category: '협의회',
               memo: '정기 협의회 표준 양식',
-              orientation: 'portrait',
+              orientation: 'landscape',
               updated_at: new Date().toISOString(),
               state_json: JSON.stringify({ ...state, ...PRESETS.council, id: 'sample-council-1' })
             }
